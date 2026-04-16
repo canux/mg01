@@ -1,0 +1,158 @@
+{
+  "_doc": "兽族 7 单位",
+  "units": [
+    {
+      "id": "orc_grunt",
+      "race": "orc",
+      "nameCn": "步兵",
+      "nameEn": "Grunt",
+      "role": "step",
+      "cost": 200,
+      "hp": 700,
+      "attack": { "damage": 19, "damageType": "normal", "range": 100, "speed": 2.00, "attackPoint": 0.55, "attackBackswing": 0.65 },
+      "defense": { "armor": 1, "armorType": "heavy" },
+      "movement": { "speed": 270, "turnRate": 0.6, "collisionRadius": 36 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["pillage"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.83, "loop": true },
+        "attack": { "clip": "Attack", "duration": 2.00, "events": [ { "time": 0.55, "name": "DealDamage" }, { "time": 0.70, "name": "SwingSfx" } ] },
+        "death": { "clip": "Death", "duration": 2.20, "events": [ { "time": 2.15, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "orc_grunt"
+    },
+    {
+      "id": "orc_headhunter",
+      "race": "orc",
+      "nameCn": "投矛兵",
+      "nameEn": "Troll Headhunter",
+      "role": "range",
+      "cost": 135,
+      "hp": 350,
+      "attack": { "damage": 18, "damageType": "pierce", "range": 400, "speed": 1.80, "attackPoint": 0.50, "attackBackswing": 0.60 },
+      "defense": { "armor": 0, "armorType": "medium" },
+      "movement": { "speed": 270, "turnRate": 0.6, "collisionRadius": 31 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["berserk"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.77, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.80, "events": [ { "time": 0.50, "name": "LaunchProjectile" } ] },
+        "death": { "clip": "Death", "duration": 2.00, "events": [ { "time": 1.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "orc_headhunter"
+    },
+    {
+      "id": "orc_tauren",
+      "race": "orc",
+      "nameCn": "牛头人",
+      "nameEn": "Tauren",
+      "role": "heavy",
+      "cost": 280,
+      "hp": 1300,
+      "attack": { "damage": 42, "damageType": "normal", "range": 100, "speed": 2.00, "attackPoint": 0.60, "attackBackswing": 0.80 },
+      "defense": { "armor": 3, "armorType": "heavy" },
+      "movement": { "speed": 270, "turnRate": 0.4, "collisionRadius": 48 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["pulverize"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.33, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 1.00, "loop": true },
+        "attack": { "clip": "Attack", "duration": 2.00, "events": [ { "time": 0.60, "name": "DealDamage" }, { "time": 0.60, "name": "PulverizeCheck" } ] },
+        "death": { "clip": "Death", "duration": 2.50, "events": [ { "time": 2.45, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "orc_tauren"
+    },
+    {
+      "id": "orc_catapult",
+      "race": "orc",
+      "nameCn": "投石车",
+      "nameEn": "Demolisher",
+      "role": "siege",
+      "cost": 220,
+      "hp": 500,
+      "attack": { "damage": 55, "damageType": "siege", "range": 1200, "speed": 2.80, "attackPoint": 1.00, "attackBackswing": 1.20, "aoeRadius": 175 },
+      "defense": { "armor": 2, "armorType": "fortified" },
+      "movement": { "speed": 220, "turnRate": 0.3, "collisionRadius": 56 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["burningOil"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 1.00, "loop": true },
+        "attack": { "clip": "Attack", "duration": 2.80, "events": [ { "time": 1.00, "name": "LaunchProjectile" } ] },
+        "death": { "clip": "Death", "duration": 2.00, "events": [ { "time": 1.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "orc_catapult"
+    },
+    {
+      "id": "orc_windrider",
+      "race": "orc",
+      "nameCn": "双足飞龙",
+      "nameEn": "Wind Rider",
+      "role": "flying",
+      "cost": 245,
+      "hp": 700,
+      "attack": { "damage": 32, "damageType": "pierce", "range": 300, "speed": 1.70, "attackPoint": 0.50, "attackBackswing": 0.60 },
+      "defense": { "armor": 1, "armorType": "heavy" },
+      "movement": { "speed": 350, "turnRate": 0.8, "collisionRadius": 48, "fly": true },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["envenomedSpears"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 1.67, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.83, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.70, "events": [ { "time": 0.50, "name": "LaunchProjectile" } ] },
+        "death": { "clip": "Death", "duration": 2.50, "events": [ { "time": 2.45, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "orc_windrider"
+    },
+    {
+      "id": "orc_shaman",
+      "race": "orc",
+      "nameCn": "萨满",
+      "nameEn": "Shaman",
+      "role": "caster",
+      "cost": 175,
+      "hp": 335,
+      "manaMax": 200,
+      "manaRegen": 1.0,
+      "attack": { "damage": 11, "damageType": "magic", "range": 600, "speed": 1.60, "attackPoint": 0.50, "attackBackswing": 0.60 },
+      "defense": { "armor": 0, "armorType": "unarmored" },
+      "movement": { "speed": 270, "turnRate": 0.6, "collisionRadius": 31 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["purge", "bloodlust", "lightningShield"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 1.00, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.60, "events": [ { "time": 0.50, "name": "LaunchProjectile" } ] },
+        "spell": { "clip": "Spell", "duration": 1.50, "events": [ { "time": 0.67, "name": "CastSpell" } ] },
+        "death": { "clip": "Death", "duration": 2.00, "events": [ { "time": 1.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "orc_shaman"
+    },
+    {
+      "id": "orc_blademaster",
+      "race": "orc",
+      "nameCn": "剑圣",
+      "nameEn": "Blademaster",
+      "role": "legendary",
+      "cost": 1200,
+      "hp": 2250,
+      "manaMax": 500,
+      "manaRegen": 2.0,
+      "attack": { "damage": 75, "damageType": "hero", "range": 100, "speed": 1.70, "attackPoint": 0.35, "attackBackswing": 0.45 },
+      "defense": { "armor": 6, "armorType": "hero" },
+      "movement": { "speed": 320, "turnRate": 0.5, "collisionRadius": 36 },
+      "vision": { "day": 1800, "night": 800 },
+      "abilities": ["windWalk", "mirrorImage", "criticalStrike", "bladestorm"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.67, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.70, "events": [ { "time": 0.35, "name": "DealDamage" }, { "time": 0.35, "name": "CritCheck" } ] },
+        "spell": { "clip": "Spell", "duration": 1.80, "events": [ { "time": 0.90, "name": "CastSpell" } ] },
+        "death": { "clip": "Death", "duration": 3.00, "events": [ { "time": 2.95, "name": "BeginDissipate" } ] }
+      },
+      "assetKey": "orc_blademaster"
+    }
+  ]
+}

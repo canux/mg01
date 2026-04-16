@@ -1,0 +1,86 @@
+{
+  "_doc": "资源路径表 — 开发自测期指向 War3 MPQ 内路径或网络免费资源；上线前替换为自制 Q 版资源。替换时只需编辑本文件，units/buildings 文件无需改动。",
+  "_note_free_assets": "免费占位可用：Mixamo (动画)、Kenney.nl (Q 版模型)、Unity Asset Store 的 Lean Poly Animals 等。War3 资源仅供个人测试使用，发布版务必换成自制 / 授权资源。",
+  "assets": {
+    "human_footman": {
+      "model": "war3://units/human/Footman/Footman.mdx",
+      "portrait": "war3://units/human/Footman/FootmanPortrait.mdx",
+      "icon": "war3://ReplaceableTextures/CommandButtons/BTNFootman.blp",
+      "sounds": {
+        "ready":  ["war3://Units/Human/Footman/FootmanReady1.wav"],
+        "what":   ["war3://Units/Human/Footman/FootmanWhat1.wav","war3://Units/Human/Footman/FootmanWhat2.wav","war3://Units/Human/Footman/FootmanWhat3.wav","war3://Units/Human/Footman/FootmanWhat4.wav"],
+        "yes":    ["war3://Units/Human/Footman/FootmanYes1.wav","war3://Units/Human/Footman/FootmanYes2.wav","war3://Units/Human/Footman/FootmanYes3.wav","war3://Units/Human/Footman/FootmanYes4.wav"],
+        "attack": ["war3://Units/Human/Footman/FootmanYesAttack1.wav","war3://Units/Human/Footman/FootmanYesAttack2.wav"],
+        "death":  ["war3://Units/Human/Footman/FootmanDeath.wav"]
+      },
+      "placeholderFree": "kenney://Prototype/adventurer.glb"
+    },
+    "human_rifleman": { "model": "war3://units/human/Rifleman/Rifleman.mdx", "icon": "war3://ReplaceableTextures/CommandButtons/BTNRifleman.blp" },
+    "human_knight":   { "model": "war3://units/human/Knight/Knight.mdx",     "icon": "war3://ReplaceableTextures/CommandButtons/BTNKnight.blp" },
+    "human_mortar":   { "model": "war3://units/human/MortarTeam/MortarTeam.mdx", "icon": "war3://ReplaceableTextures/CommandButtons/BTNMortarTeam.blp" },
+    "human_gryphon":  { "model": "war3://units/human/GryphonRider/GryphonRider.mdx", "icon": "war3://ReplaceableTextures/CommandButtons/BTNGryphonRider.blp" },
+    "human_priest":   { "model": "war3://units/human/Priest/Priest.mdx",     "icon": "war3://ReplaceableTextures/CommandButtons/BTNPriest.blp" },
+    "human_archmage": { "model": "war3://units/heroes/Archmage/Archmage.mdx","icon": "war3://ReplaceableTextures/CommandButtons/BTNHeroArchMage.blp" },
+
+    "orc_grunt":        { "model": "war3://units/orc/Grunt/Grunt.mdx",                 "icon": "war3://ReplaceableTextures/CommandButtons/BTNGrunt.blp" },
+    "orc_headhunter":   { "model": "war3://units/orc/Headhunter/Headhunter.mdx",       "icon": "war3://ReplaceableTextures/CommandButtons/BTNHeadHunter.blp" },
+    "orc_tauren":       { "model": "war3://units/orc/Tauren/Tauren.mdx",               "icon": "war3://ReplaceableTextures/CommandButtons/BTNTauren.blp" },
+    "orc_catapult":     { "model": "war3://units/orc/Catapult/Catapult.mdx",           "icon": "war3://ReplaceableTextures/CommandButtons/BTNCatapult.blp" },
+    "orc_windrider":    { "model": "war3://units/orc/WyvernRider/WyvernRider.mdx",     "icon": "war3://ReplaceableTextures/CommandButtons/BTNWyvern.blp" },
+    "orc_shaman":       { "model": "war3://units/orc/Shaman/Shaman.mdx",               "icon": "war3://ReplaceableTextures/CommandButtons/BTNShaman.blp" },
+    "orc_blademaster":  { "model": "war3://units/heroes/Blademaster/Blademaster.mdx",  "icon": "war3://ReplaceableTextures/CommandButtons/BTNHeroBlademaster.blp" },
+
+    "ud_ghoul":        { "model": "war3://units/undead/Ghoul/Ghoul.mdx",               "icon": "war3://ReplaceableTextures/CommandButtons/BTNGhoul.blp" },
+    "ud_cryptfiend":   { "model": "war3://units/undead/CryptFiend/CryptFiend.mdx",     "icon": "war3://ReplaceableTextures/CommandButtons/BTNCryptFiend.blp" },
+    "ud_abomination":  { "model": "war3://units/undead/Abomination/Abomination.mdx",   "icon": "war3://ReplaceableTextures/CommandButtons/BTNAbomination.blp" },
+    "ud_meatwagon":    { "model": "war3://units/undead/MeatWagon/MeatWagon.mdx",       "icon": "war3://ReplaceableTextures/CommandButtons/BTNMeatwagon.blp" },
+    "ud_gargoyle":     { "model": "war3://units/undead/Gargoyle/Gargoyle.mdx",         "icon": "war3://ReplaceableTextures/CommandButtons/BTNGargoyle.blp" },
+    "ud_necromancer":  { "model": "war3://units/undead/Necromancer/Necromancer.mdx",   "icon": "war3://ReplaceableTextures/CommandButtons/BTNNecromancer.blp" },
+    "ud_lich":         { "model": "war3://units/heroes/Lich/Lich.mdx",                 "icon": "war3://ReplaceableTextures/CommandButtons/BTNHeroLich.blp" },
+
+    "ne_archer":       { "model": "war3://units/nightelf/Archer/Archer.mdx",           "icon": "war3://ReplaceableTextures/CommandButtons/BTNArcher.blp" },
+    "ne_huntress":     { "model": "war3://units/nightelf/Huntress/Huntress.mdx",       "icon": "war3://ReplaceableTextures/CommandButtons/BTNHuntress.blp" },
+    "ne_druidbear":    { "model": "war3://units/nightelf/DruidOfTheClaw/DruidOfTheClaw.mdx", "icon": "war3://ReplaceableTextures/CommandButtons/BTNDruidOfTheClaw.blp" },
+    "ne_glaive":       { "model": "war3://units/nightelf/GlaiveThrower/GlaiveThrower.mdx", "icon": "war3://ReplaceableTextures/CommandButtons/BTNGlaiveThrower.blp" },
+    "ne_chimera":      { "model": "war3://units/nightelf/Chimaera/Chimaera.mdx",       "icon": "war3://ReplaceableTextures/CommandButtons/BTNChimaera.blp" },
+    "ne_druidtalon":   { "model": "war3://units/nightelf/DruidOfTheTalon/DruidOfTheTalon.mdx", "icon": "war3://ReplaceableTextures/CommandButtons/BTNDruidOfTheTalon.blp" },
+    "ne_keeper":       { "model": "war3://units/heroes/KeeperOfTheGrove/KeeperOfTheGrove.mdx", "icon": "war3://ReplaceableTextures/CommandButtons/BTNKeeperOfTheGrove.blp" },
+
+    "human_castle":    { "model": "war3://buildings/human/Castle/Castle.mdx",                 "icon": "war3://ReplaceableTextures/CommandButtons/BTNCastle.blp" },
+    "human_tower":     { "model": "war3://buildings/human/GuardTower/GuardTower.mdx",         "icon": "war3://ReplaceableTextures/CommandButtons/BTNGuardTower.blp" },
+    "human_barracks":  { "model": "war3://buildings/human/Barracks/Barracks.mdx",             "icon": "war3://ReplaceableTextures/CommandButtons/BTNBarracks.blp" },
+    "human_stable":    { "model": "war3://buildings/human/Stables/Stables.mdx",               "icon": "war3://ReplaceableTextures/CommandButtons/BTNStables.blp" },
+    "human_workshop":  { "model": "war3://buildings/human/Workshop/Workshop.mdx",             "icon": "war3://ReplaceableTextures/CommandButtons/BTNWorkshop.blp" },
+    "human_aviary":    { "model": "war3://buildings/human/GryphonAviary/GryphonAviary.mdx",   "icon": "war3://ReplaceableTextures/CommandButtons/BTNGryphonAviary.blp" },
+    "human_sanctum":   { "model": "war3://buildings/human/ArcaneSanctum/ArcaneSanctum.mdx",   "icon": "war3://ReplaceableTextures/CommandButtons/BTNArcaneSanctum.blp" },
+    "human_altar":     { "model": "war3://buildings/human/AltarOfKings/AltarOfKings.mdx",     "icon": "war3://ReplaceableTextures/CommandButtons/BTNAltarOfKings.blp" },
+
+    "orc_castle":        { "model": "war3://buildings/orc/OrcStronghold3/OrcStronghold3.mdx",     "icon": "war3://ReplaceableTextures/CommandButtons/BTNFortress.blp" },
+    "orc_tower":         { "model": "war3://buildings/orc/WatchTower/WatchTower.mdx",             "icon": "war3://ReplaceableTextures/CommandButtons/BTNWatchTower.blp" },
+    "orc_barracks":      { "model": "war3://buildings/orc/OrcBarracks/OrcBarracks.mdx",           "icon": "war3://ReplaceableTextures/CommandButtons/BTNOrcBarracks.blp" },
+    "orc_trollden":      { "model": "war3://buildings/orc/TrollBurrow/TrollBurrow.mdx",           "icon": "war3://ReplaceableTextures/CommandButtons/BTNTrollBurrow.blp" },
+    "orc_totem":         { "model": "war3://buildings/orc/TaurenTotem/TaurenTotem.mdx",           "icon": "war3://ReplaceableTextures/CommandButtons/BTNTaurenTotem.blp" },
+    "orc_workshop":      { "model": "war3://buildings/orc/WarMill/WarMill.mdx",                   "icon": "war3://ReplaceableTextures/CommandButtons/BTNWarMill.blp" },
+    "orc_beastiary":     { "model": "war3://buildings/orc/Beastiary/Beastiary.mdx",               "icon": "war3://ReplaceableTextures/CommandButtons/BTNBeastiary.blp" },
+    "orc_spiritlodge":   { "model": "war3://buildings/orc/SpiritLodge/SpiritLodge.mdx",           "icon": "war3://ReplaceableTextures/CommandButtons/BTNSpiritLodge.blp" },
+    "orc_altar":         { "model": "war3://buildings/orc/AltarOfStorms/AltarOfStorms.mdx",       "icon": "war3://ReplaceableTextures/CommandButtons/BTNAltarOfStorms.blp" },
+
+    "ud_castle":         { "model": "war3://buildings/undead/BlackCitadel/BlackCitadel.mdx",     "icon": "war3://ReplaceableTextures/CommandButtons/BTNBlackCitadel.blp" },
+    "ud_tower":          { "model": "war3://buildings/undead/SpiritTower/SpiritTower.mdx",       "icon": "war3://ReplaceableTextures/CommandButtons/BTNSpiritTower.blp" },
+    "ud_crypt":          { "model": "war3://buildings/undead/Crypt/Crypt.mdx",                   "icon": "war3://ReplaceableTextures/CommandButtons/BTNCrypt.blp" },
+    "ud_slaughterhouse": { "model": "war3://buildings/undead/Slaughterhouse/Slaughterhouse.mdx", "icon": "war3://ReplaceableTextures/CommandButtons/BTNSlaughterhouse.blp" },
+    "ud_graveyard":      { "model": "war3://buildings/undead/Graveyard/Graveyard.mdx",           "icon": "war3://ReplaceableTextures/CommandButtons/BTNGraveyard.blp" },
+    "ud_boneyard":       { "model": "war3://buildings/undead/Boneyard/Boneyard.mdx",             "icon": "war3://ReplaceableTextures/CommandButtons/BTNBoneyard.blp" },
+    "ud_temple":         { "model": "war3://buildings/undead/TempleOfTheDamned/TempleOfTheDamned.mdx", "icon": "war3://ReplaceableTextures/CommandButtons/BTNTempleOfTheDamned.blp" },
+    "ud_altar":          { "model": "war3://buildings/undead/AltarOfDarkness/AltarOfDarkness.mdx","icon": "war3://ReplaceableTextures/CommandButtons/BTNAltarOfDarkness.blp" },
+
+    "ne_castle":         { "model": "war3://buildings/nightelf/TreeOfEternity/TreeOfEternity.mdx", "icon": "war3://ReplaceableTextures/CommandButtons/BTNTreeOfEternity.blp" },
+    "ne_tower":          { "model": "war3://buildings/nightelf/AncientProtector/AncientProtector.mdx", "icon": "war3://ReplaceableTextures/CommandButtons/BTNAncientProtector.blp" },
+    "ne_ancientofwar":   { "model": "war3://buildings/nightelf/AncientOfWar/AncientOfWar.mdx",     "icon": "war3://ReplaceableTextures/CommandButtons/BTNAncientOfWar.blp" },
+    "ne_ancientoflore":  { "model": "war3://buildings/nightelf/AncientOfLore/AncientOfLore.mdx",   "icon": "war3://ReplaceableTextures/CommandButtons/BTNAncientOfLore.blp" },
+    "ne_ancientofwind":  { "model": "war3://buildings/nightelf/AncientOfWind/AncientOfWind.mdx",   "icon": "war3://ReplaceableTextures/CommandButtons/BTNAncientOfWind.blp" },
+    "ne_chimeraroost":   { "model": "war3://buildings/nightelf/ChimaeraRoost/ChimaeraRoost.mdx",   "icon": "war3://ReplaceableTextures/CommandButtons/BTNChimaeraRoost.blp" },
+    "ne_moonwell":       { "model": "war3://buildings/nightelf/MoonWell/MoonWell.mdx",             "icon": "war3://ReplaceableTextures/CommandButtons/BTNMoonWell.blp" },
+    "ne_altar":          { "model": "war3://buildings/nightelf/AltarOfElders/AltarOfElders.mdx",   "icon": "war3://ReplaceableTextures/CommandButtons/BTNAltarOfElders.blp" }
+  }
+}

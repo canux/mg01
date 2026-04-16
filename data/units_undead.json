@@ -1,0 +1,159 @@
+{
+  "_doc": "不死族 7 单位",
+  "units": [
+    {
+      "id": "ud_ghoul",
+      "race": "undead",
+      "nameCn": "食尸鬼",
+      "nameEn": "Ghoul",
+      "role": "step",
+      "cost": 120,
+      "hp": 340,
+      "attack": { "damage": 16, "damageType": "normal", "range": 90, "speed": 1.75, "attackPoint": 0.50, "attackBackswing": 0.60 },
+      "defense": { "armor": 0, "armorType": "medium" },
+      "movement": { "speed": 270, "turnRate": 0.6, "collisionRadius": 31 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["cannibalize", "ghoulFrenzy"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.77, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.75, "events": [ { "time": 0.50, "name": "DealDamage" } ] },
+        "death": { "clip": "Decay", "duration": 2.00, "events": [ { "time": 1.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "ud_ghoul"
+    },
+    {
+      "id": "ud_cryptfiend",
+      "race": "undead",
+      "nameCn": "毁灭蜘蛛",
+      "nameEn": "Crypt Fiend",
+      "role": "range",
+      "cost": 215,
+      "hp": 550,
+      "attack": { "damage": 26, "damageType": "pierce", "range": 550, "speed": 1.85, "attackPoint": 0.55, "attackBackswing": 0.65 },
+      "defense": { "armor": 0, "armorType": "light" },
+      "movement": { "speed": 270, "turnRate": 0.6, "collisionRadius": 36 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["web", "burrow"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.83, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.85, "events": [ { "time": 0.55, "name": "LaunchProjectile" } ] },
+        "death": { "clip": "Death", "duration": 2.00, "events": [ { "time": 1.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "ud_cryptfiend"
+    },
+    {
+      "id": "ud_abomination",
+      "race": "undead",
+      "nameCn": "憎恶",
+      "nameEn": "Abomination",
+      "role": "heavy",
+      "cost": 238,
+      "hp": 985,
+      "attack": { "damage": 36, "damageType": "normal", "range": 100, "speed": 1.90, "attackPoint": 0.55, "attackBackswing": 0.70 },
+      "defense": { "armor": 3, "armorType": "heavy" },
+      "movement": { "speed": 270, "turnRate": 0.4, "collisionRadius": 48 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["diseaseCloud"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.33, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 1.00, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.90, "events": [ { "time": 0.55, "name": "DealDamage" } ] },
+        "death": { "clip": "Death", "duration": 2.50, "events": [ { "time": 2.45, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "ud_abomination"
+    },
+    {
+      "id": "ud_meatwagon",
+      "race": "undead",
+      "nameCn": "绞肉车",
+      "nameEn": "Meat Wagon",
+      "role": "siege",
+      "cost": 230,
+      "hp": 500,
+      "attack": { "damage": 55, "damageType": "siege", "range": 1200, "speed": 2.80, "attackPoint": 0.90, "attackBackswing": 1.10, "aoeRadius": 150 },
+      "defense": { "armor": 1, "armorType": "fortified" },
+      "movement": { "speed": 190, "turnRate": 0.3, "collisionRadius": 56 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["diseaseBall", "loadCorpses"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 1.00, "loop": true },
+        "attack": { "clip": "Attack", "duration": 2.80, "events": [ { "time": 0.90, "name": "LaunchProjectile" } ] },
+        "death": { "clip": "Death", "duration": 2.50, "events": [ { "time": 2.45, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "ud_meatwagon"
+    },
+    {
+      "id": "ud_gargoyle",
+      "race": "undead",
+      "nameCn": "石像鬼",
+      "nameEn": "Gargoyle",
+      "role": "flying",
+      "cost": 160,
+      "hp": 520,
+      "attack": { "damage": 18, "damageType": "pierce", "range": 350, "speed": 1.60, "attackPoint": 0.45, "attackBackswing": 0.55 },
+      "defense": { "armor": 0, "armorType": "light" },
+      "movement": { "speed": 350, "turnRate": 0.8, "collisionRadius": 36, "fly": true },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["stoneForm"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 1.67, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.83, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.60, "events": [ { "time": 0.45, "name": "LaunchProjectile" } ] },
+        "morph": { "clip": "Morph", "duration": 2.00, "events": [ { "time": 2.00, "name": "StoneFormComplete" } ] },
+        "death": { "clip": "Death", "duration": 2.50, "events": [ { "time": 2.45, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "ud_gargoyle"
+    },
+    {
+      "id": "ud_necromancer",
+      "race": "undead",
+      "nameCn": "巫师",
+      "nameEn": "Necromancer",
+      "role": "caster",
+      "cost": 140,
+      "hp": 230,
+      "manaMax": 200,
+      "manaRegen": 1.0,
+      "attack": { "damage": 11, "damageType": "magic", "range": 600, "speed": 1.60, "attackPoint": 0.50, "attackBackswing": 0.60 },
+      "defense": { "armor": 0, "armorType": "unarmored" },
+      "movement": { "speed": 270, "turnRate": 0.6, "collisionRadius": 31 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["raiseDead", "unholyFrenzy", "cripple"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 1.00, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.60, "events": [ { "time": 0.50, "name": "LaunchProjectile" } ] },
+        "spell": { "clip": "Spell", "duration": 1.80, "events": [ { "time": 0.80, "name": "CastSpell" } ] },
+        "death": { "clip": "Death", "duration": 2.00, "events": [ { "time": 1.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "ud_necromancer"
+    },
+    {
+      "id": "ud_lich",
+      "race": "undead",
+      "nameCn": "巫妖",
+      "nameEn": "Lich",
+      "role": "legendary",
+      "cost": 1200,
+      "hp": 1850,
+      "manaMax": 700,
+      "manaRegen": 2.5,
+      "attack": { "damage": 50, "damageType": "hero", "range": 600, "speed": 1.80, "attackPoint": 0.50, "attackBackswing": 0.60 },
+      "defense": { "armor": 4, "armorType": "hero" },
+      "movement": { "speed": 320, "turnRate": 0.5, "collisionRadius": 36 },
+      "vision": { "day": 1800, "night": 800 },
+      "abilities": ["frostNova", "frostArmor", "darkRitual", "deathAndDecay"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.83, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.80, "events": [ { "time": 0.50, "name": "LaunchProjectile" } ] },
+        "spell": { "clip": "Spell", "duration": 2.20, "events": [ { "time": 1.10, "name": "CastSpell" } ] },
+        "death": { "clip": "Death", "duration": 3.00, "events": [ { "time": 2.95, "name": "BeginDissipate" } ] }
+      },
+      "assetKey": "ud_lich"
+    }
+  ]
+}

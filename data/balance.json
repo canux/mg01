@@ -1,0 +1,48 @@
+{
+  "_doc": "全局平衡常数。所有时间单位为秒，距离单位与 War3 一致 (1 tile = 128)",
+  "tickRate": 10,
+  "laneLength": 3000,
+  "laneWidth": 256,
+  "incomeIntervalSec": 10,
+  "startGold": 200,
+  "baseIncome": 10,
+  "castle": {
+    "hp": 5000,
+    "armor": 5,
+    "armorType": "fortified",
+    "attackDamage": 70,
+    "attackType": "pierce",
+    "attackRange": 600,
+    "attackSpeed": 1.5,
+    "attackPoint": 0.5,
+    "attackBackswing": 0.5,
+    "sight": 1200,
+    "incomeBonus": 0
+  },
+  "tower": {
+    "hp": 800,
+    "armor": 5,
+    "armorType": "fortified",
+    "attackDamage": 30,
+    "attackType": "pierce",
+    "attackRange": 700,
+    "attackSpeed": 1.2,
+    "attackPoint": 0.3,
+    "attackBackswing": 0.3,
+    "buildTimeSec": 15,
+    "cost": 200
+  },
+  "buildingDefaults": {
+    "barracksHp": 600,
+    "barracksArmor": 3,
+    "barracksArmorType": "fortified",
+    "buildTimeSec": 15,
+    "incomeBonusPer": 2
+  },
+  "rules": {
+    "winCondition": "destroy_enemy_castle",
+    "maxBattleSec": 600,
+    "corpseDecaySec": 60,
+    "deathDissipateSec": 3
+  }
+}

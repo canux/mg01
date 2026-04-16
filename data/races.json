@@ -1,0 +1,41 @@
+{
+  "_doc": "4 个首发种族。color 用于 UI 主题色 (hex)",
+  "races": [
+    {
+      "id": "human",
+      "nameCn": "人族",
+      "nameEn": "Human Alliance",
+      "color": "#3B7FD9",
+      "themeMusic": "Sound/Music/mp3Music/Human1.mp3",
+      "castleAsset": "human_castle",
+      "description": "均衡型，强护甲与治疗术"
+    },
+    {
+      "id": "orc",
+      "nameCn": "兽族",
+      "nameEn": "Orcish Horde",
+      "color": "#B94A2B",
+      "themeMusic": "Sound/Music/mp3Music/Orc1.mp3",
+      "castleAsset": "orc_castle",
+      "description": "高 HP 高 DPS，回血图腾"
+    },
+    {
+      "id": "undead",
+      "nameCn": "不死族",
+      "nameEn": "Undead Scourge",
+      "color": "#7E3FA1",
+      "themeMusic": "Sound/Music/mp3Music/Undead1.mp3",
+      "castleAsset": "ud_castle",
+      "description": "召唤为主，亡灵复活"
+    },
+    {
+      "id": "nightelf",
+      "nameCn": "暗夜精灵",
+      "nameEn": "Night Elf Sentinels",
+      "color": "#2FA86E",
+      "themeMusic": "Sound/Music/mp3Music/NightElf1.mp3",
+      "castleAsset": "ne_castle",
+      "description": "远程为王，月井恢复"
+    }
+  ]
+}

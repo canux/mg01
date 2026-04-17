@@ -1,0 +1,16 @@
+{
+  "name": "mg01-engine",
+  "version": "0.1.0",
+  "description": "mg01 城堡争霸 headless 战斗模拟器 (可移植到 Unity C#)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/Main.ts",
+    "duel":  "node --experimental-strip-types --disable-warning=ExperimentalWarning scenarios/duel.ts",
+    "match": "node --experimental-strip-types --disable-warning=ExperimentalWarning scenarios/match.ts",
+    "test":  "node --experimental-strip-types --disable-warning=ExperimentalWarning scenarios/damage-test.ts"
+  },
+  "engines": {
+    "node": ">=22.6.0"
+  }
+}

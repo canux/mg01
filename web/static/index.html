@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0d1220">
+  <title>mg01 城堡争霸</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <header id="hud-top">
+      <div class="side side-left" id="hud-left">
+        <span class="race-badge" id="race-left">人族</span>
+        <span class="gold"><i>●</i><b id="gold-left">200</b></span>
+        <span class="income" id="income-left">+10/10s</span>
+      </div>
+      <div class="center">
+        <div class="timer"><span id="timer">0.0s</span> <span class="sep">/</span> <span id="timer-max">300s</span></div>
+        <div class="phase" id="phase">Phase 0</div>
+      </div>
+      <div class="side side-right" id="hud-right">
+        <span class="race-badge" id="race-right">兽族</span>
+        <span class="gold"><i>●</i><b id="gold-right">200</b></span>
+        <span class="income" id="income-right">+10/10s</span>
+      </div>
+    </header>
+
+    <div id="stage-wrap">
+      <canvas id="stage"></canvas>
+      <div id="banner" class="hidden"></div>
+    </div>
+
+    <footer id="hud-bottom">
+      <div class="picker">
+        <label>L</label>
+        <select id="pick-left"></select>
+      </div>
+      <button id="btn-new" class="primary">新局</button>
+      <div class="picker">
+        <label>R</label>
+        <select id="pick-right"></select>
+      </div>
+    </footer>
+
+    <div id="log-panel">
+      <ul id="log"></ul>
+    </div>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

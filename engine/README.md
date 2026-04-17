@@ -22,9 +22,12 @@ node --experimental-strip-types scenarios/match.ts -v   # 详细事件流
 
 # 完整经济 + 玩家策略 (AI 出牌 + 每 10s 收入)
 node --experimental-strip-types scenarios/economy-match.ts
+
+# 浏览器 UI (移动端 portrait 9:16，SSE 实时渲染)
+npm run web          # → http://localhost:8080
 ```
 
-或：`npm start` / `npm run duel` / `npm test` / `npm run match`。
+或：`npm start` / `npm run duel` / `npm test` / `npm run match` / `npm run web`。
 
 ## 目录
 

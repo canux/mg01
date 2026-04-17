@@ -4,10 +4,10 @@
   "laneLength": 3000,
   "laneWidth": 256,
   "incomeIntervalSec": 10,
-  "startGold": 200,
+  "startGold": 400,
   "baseIncome": 10,
   "castle": {
-    "hp": 5000,
+    "hp": 2000,
     "armor": 5,
     "armorType": "fortified",
     "attackDamage": 70,
@@ -41,7 +41,7 @@
   },
   "rules": {
     "winCondition": "destroy_enemy_castle",
-    "maxBattleSec": 600,
+    "maxBattleSec": 300,
     "corpseDecaySec": 60,
     "deathDissipateSec": 3
   }

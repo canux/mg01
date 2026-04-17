@@ -14,6 +14,8 @@ export class Building {
   pos: Vec2;
 
   hp: number;
+  /** 当前护甲；初始化自模板，可被阶段机制动态修改 (e.g. 主城 Siege Phase) */
+  armor: number;
   alive = true;
 
   /** 下一次出兵时间 (绝对秒) */
@@ -27,6 +29,7 @@ export class Building {
     this.side = side;
     this.pos = pos;
     this.hp = tpl.hp;
+    this.armor = tpl.armor;
     this.readyAt = createdAt + (tpl.buildTimeSec ?? 0);
     this.nextSpawnAt = this.readyAt + (tpl.spawnIntervalSec ?? 0);
   }
@@ -34,7 +37,7 @@ export class Building {
   isReady(now: number): boolean { return now >= this.readyAt; }
 
   takeDamage(raw: number, atkType: import("./Enums.ts").DamageType): number {
-    const actual = DamageCalc.calc(raw, atkType, this.tpl.armor, this.tpl.armorType);
+    const actual = DamageCalc.calc(raw, atkType, this.armor, this.tpl.armorType);
     this.hp -= actual;
     if (this.hp <= 0) { this.hp = 0; this.alive = false; }
     return actual;

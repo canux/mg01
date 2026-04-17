@@ -10,8 +10,21 @@ import type { Player } from "./Player.ts";
 
 export interface SimEvent {
   t: number;
-  kind: "spawn" | "attack" | "death" | "building_down" | "castle_down" | "income" | "build" | "end";
+  kind: "spawn" | "attack" | "death" | "building_down" | "castle_down" | "income" | "build" | "phase" | "end";
   msg: string;
+}
+
+/** 主城攻城阶段：时刻 (秒) → 主城护甲 + 每秒被动衰减 HP。维持第一个 <= now 的条目。 */
+const SIEGE_PHASES: Array<{ t: number; castleArmor: number; decayPerSec: number; label: string }> = [
+  { t: 0,   castleArmor: 5, decayPerSec: 0,  label: "opening" },
+  { t: 120, castleArmor: 3, decayPerSec: 0,  label: "siege-1" },
+  { t: 180, castleArmor: 1, decayPerSec: 5,  label: "siege-2" },
+  { t: 240, castleArmor: 0, decayPerSec: 15, label: "sudden-death" },
+];
+
+/** 经济坡度：每 60s +10 基础收入 (0:10 / 60:20 / 120:30 / 180:40 / 240+:50 per 10s) */
+function effectiveBaseIncome(baseIncome: number, now: number): number {
+  return baseIncome + Math.floor(now / 60) * 10;
 }
 
 export interface SimConfig {
@@ -35,6 +48,7 @@ export class BattleSim {
   ended = false;
   private _hasLeftCastleEver = false;
   private _hasRightCastleEver = false;
+  private _phaseIdx = 0;
 
   constructor(cfg: SimConfig) {
     this.cfg = cfg;
@@ -98,7 +112,10 @@ export class BattleSim {
   tick(): void {
     this.now += this.dt;
 
-    // 0. 经济结算 + 策略出牌
+    // 0a. 阶段推进 (主城护甲衰减)
+    this._tickEscalation();
+
+    // 0b. 经济结算 + 策略出牌
     this._tickPlayers();
 
     // 1. 建筑出兵
@@ -144,13 +161,46 @@ export class BattleSim {
     }
   }
 
+  // ---- 内部：阶段推进 ----
+
+  private _tickEscalation(): void {
+    // 找到当前应处于的阶段（最后一个 t <= now 的条目）
+    let target = 0;
+    for (let i = 0; i < SIEGE_PHASES.length; i++) {
+      if (this.now >= SIEGE_PHASES[i]!.t) target = i;
+    }
+    // 阶段跃迁：更新主城护甲并 log
+    if (target !== this._phaseIdx) {
+      const phase = SIEGE_PHASES[target]!;
+      for (const b of this.buildings) {
+        if (b.alive && b.tpl.kind === "castle") b.armor = phase.castleArmor;
+      }
+      this.log({ t: this.now, kind: "phase",
+        msg: `Phase ${phase.label}: castle armor -> ${phase.castleArmor}${phase.decayPerSec ? `, decay ${phase.decayPerSec} HP/s` : ""}` });
+      this._phaseIdx = target;
+    }
+    // 每 tick 应用被动衰减 (siege-2 / sudden-death)
+    const decay = SIEGE_PHASES[this._phaseIdx]!.decayPerSec;
+    if (decay > 0) {
+      const loss = decay * this.dt;
+      for (const b of this.buildings) {
+        if (!b.alive || b.tpl.kind !== "castle") continue;
+        b.hp -= loss;
+        if (b.hp <= 0) {
+          b.hp = 0; b.alive = false;
+          this.log({ t: this.now, kind: "castle_down", msg: `${sideTag(b.side)} ${b.tpl.nameCn} collapsed (siege decay)` });
+        }
+      }
+    }
+  }
+
   // ---- 内部：玩家 ----
 
   private _tickPlayers(): void {
     // 收入结算
     for (const p of this.players) {
       while (this.now >= p.nextIncomeAt) {
-        const n = p.incomePerInterval(this.balance.baseIncome);
+        const n = p.incomePerInterval(effectiveBaseIncome(this.balance.baseIncome, this.now));
         p.earn(n);
         p.nextIncomeAt += this.balance.incomeIntervalSec;
         this.log({ t: this.now, kind: "income", msg: `${p.name} +${n} gold (total ${p.gold}, income ${n}/${this.balance.incomeIntervalSec}s)` });
@@ -165,7 +215,7 @@ export class BattleSim {
       const ctx = {
         now: this.now,
         gold: p.gold,
-        income: p.incomePerInterval(this.balance.baseIncome),
+        income: p.incomePerInterval(effectiveBaseIncome(this.balance.baseIncome, this.now)),
         availableSlots: slots.length,
         ownedBuildings: p.ownedBuildings as readonly Building[],
         canAfford: (bid: string): boolean => {

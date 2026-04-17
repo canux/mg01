@@ -1,10 +1,10 @@
 {
   "_doc": "建筑：主城/兵营/防御塔/特殊建筑。每个兵营对应 1 个单位，按 spawnInterval 自动出兵。",
   "buildings": [
-    { "id": "human_castle",    "race": "human",    "nameCn": "人族主城",    "kind": "castle",   "hp": 5000, "armor": 5, "armorType": "fortified", "assetKey": "human_castle" },
-    { "id": "orc_castle",      "race": "orc",      "nameCn": "兽族主城",    "kind": "castle",   "hp": 5000, "armor": 5, "armorType": "fortified", "assetKey": "orc_castle" },
-    { "id": "ud_castle",       "race": "undead",   "nameCn": "不死主城",    "kind": "castle",   "hp": 5000, "armor": 5, "armorType": "fortified", "assetKey": "ud_castle" },
-    { "id": "ne_castle",       "race": "nightelf", "nameCn": "精灵主城",    "kind": "castle",   "hp": 5000, "armor": 5, "armorType": "fortified", "assetKey": "ne_castle" },
+    { "id": "human_castle",    "race": "human",    "nameCn": "人族主城",    "kind": "castle",   "hp": 2000, "armor": 5, "armorType": "fortified", "assetKey": "human_castle" },
+    { "id": "orc_castle",      "race": "orc",      "nameCn": "兽族主城",    "kind": "castle",   "hp": 2000, "armor": 5, "armorType": "fortified", "assetKey": "orc_castle" },
+    { "id": "ud_castle",       "race": "undead",   "nameCn": "不死主城",    "kind": "castle",   "hp": 2000, "armor": 5, "armorType": "fortified", "assetKey": "ud_castle" },
+    { "id": "ne_castle",       "race": "nightelf", "nameCn": "精灵主城",    "kind": "castle",   "hp": 2000, "armor": 5, "armorType": "fortified", "assetKey": "ne_castle" },
 
     { "id": "human_goldmine",  "race": "human",    "nameCn": "人族金矿",    "kind": "economy",  "hp": 800, "armor": 3, "armorType": "fortified", "cost": 250, "buildTimeSec": 20, "incomeBonusPer10s": 5, "assetKey": "human_goldmine" },
     { "id": "orc_goldmine",    "race": "orc",      "nameCn": "兽族金矿",    "kind": "economy",  "hp": 800, "armor": 3, "armorType": "fortified", "cost": 250, "buildTimeSec": 20, "incomeBonusPer10s": 5, "assetKey": "orc_goldmine" },

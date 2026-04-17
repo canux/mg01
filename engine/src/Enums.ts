@@ -45,5 +45,6 @@ export const BuildingKind = {
   Barracks: "barracks",
   Special: "special",
   Legendary: "legendary",
+  Economy: "economy",
 } as const;
 export type BuildingKind = typeof BuildingKind[keyof typeof BuildingKind];

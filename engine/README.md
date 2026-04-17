@@ -19,6 +19,9 @@ node --experimental-strip-types scenarios/duel.ts
 # 全场 AI 对战
 node --experimental-strip-types scenarios/match.ts
 node --experimental-strip-types scenarios/match.ts -v   # 详细事件流
+
+# 完整经济 + 玩家策略 (AI 出牌 + 每 10s 收入)
+node --experimental-strip-types scenarios/economy-match.ts
 ```
 
 或：`npm start` / `npm run duel` / `npm test` / `npm run match`。
@@ -115,11 +118,14 @@ headless 引擎**只读 `attackPoint`/`attackBackswing`（秒）做逻辑**；�
 - [x] 单位：寻敌、移动、攻击（带 attackPoint 关键帧）
 - [x] 建筑：主城 / 兵营（自动出兵）/ 防御塔（自卫）
 - [x] 胜负判定 (castle HP → 0)
+- [x] 经济系统：startGold + 每 10s 结算收入 + 建筑 cost/incomeBonus
+- [x] 金矿建筑（economy kind，每族 1 个，+5/10s income）
+- [x] 玩家 / 策略接口（Player + PlayerStrategy: buildOrder / mixedComposition）
+- [x] 自动槽位分配 (3×4 grid per side, 距主城由近到远)
 - [ ] 投射物飞行 (当前瞬间命中)
 - [ ] 技能施法 (spells.json 已有数据, 逻辑待补)
 - [ ] AOE / bounce / dot / 召唤
 - [ ] 寻路 / 卡位 (当前直线走)
-- [ ] 经济系统 (startGold / 每 10s 收入)
 - [ ] 网络同步 / 回放
 
-下一步优先级建议：**技能施法** → **投射物** → **经济循环**。
+下一步优先级建议：**技能施法** → **投射物** → **AOE**。

@@ -47,6 +47,10 @@
     "ne_keeper":       { "model": "war3://units/heroes/KeeperOfTheGrove/KeeperOfTheGrove.mdx", "icon": "war3://ReplaceableTextures/CommandButtons/BTNKeeperOfTheGrove.blp" },
 
     "human_castle":    { "model": "war3://buildings/human/Castle/Castle.mdx",                 "icon": "war3://ReplaceableTextures/CommandButtons/BTNCastle.blp" },
+    "human_goldmine":  { "model": "war3://buildings/other/GoldMine/GoldMine.mdx",             "icon": "war3://ReplaceableTextures/CommandButtons/BTNGoldMine.blp" },
+    "orc_goldmine":    { "model": "war3://buildings/other/GoldMine/GoldMine.mdx",             "icon": "war3://ReplaceableTextures/CommandButtons/BTNGoldMine.blp" },
+    "ud_haunted":      { "model": "war3://buildings/undead/HauntedGoldMine/HauntedGoldMine.mdx","icon": "war3://ReplaceableTextures/CommandButtons/BTNHauntedGoldMine.blp" },
+    "ne_entangledmine":{ "model": "war3://buildings/nightelf/EntangledGoldMine/EntangledGoldMine.mdx","icon": "war3://ReplaceableTextures/CommandButtons/BTNEntangledGoldMine.blp" },
     "human_tower":     { "model": "war3://buildings/human/GuardTower/GuardTower.mdx",         "icon": "war3://ReplaceableTextures/CommandButtons/BTNGuardTower.blp" },
     "human_barracks":  { "model": "war3://buildings/human/Barracks/Barracks.mdx",             "icon": "war3://ReplaceableTextures/CommandButtons/BTNBarracks.blp" },
     "human_stable":    { "model": "war3://buildings/human/Stables/Stables.mdx",               "icon": "war3://ReplaceableTextures/CommandButtons/BTNStables.blp" },

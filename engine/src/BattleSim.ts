@@ -5,12 +5,12 @@ import { Vec2 } from "./Vec2.ts";
 import { Unit } from "./Unit.ts";
 import { Building } from "./Building.ts";
 import { Side } from "./Enums.ts";
-import type { UnitTemplate, BuildingTemplate, BalanceDef } from "./Templates.ts";
-import { DamageCalc } from "./DamageCalc.ts";
+import type { UnitTemplate, BuildingTemplate, BalanceDef, RaceDef } from "./Templates.ts";
+import type { Player } from "./Player.ts";
 
 export interface SimEvent {
   t: number;
-  kind: "spawn" | "attack" | "death" | "building_down" | "castle_down" | "end";
+  kind: "spawn" | "attack" | "death" | "building_down" | "castle_down" | "income" | "build" | "end";
   msg: string;
 }
 
@@ -29,6 +29,7 @@ export class BattleSim {
   readonly dt: number;                    // 每 tick 秒数
   units: Unit[] = [];
   buildings: Building[] = [];
+  players: Player[] = [];
   events: SimEvent[] = [];
   winner: Side | null = null;
   ended = false;
@@ -44,8 +45,21 @@ export class BattleSim {
   log(ev: SimEvent) {
     this.events.push(ev);
     if (this.cfg.verbose) {
-      console.log(`[t=${ev.t.toFixed(2)}s] ${ev.kind.padEnd(14)} ${ev.msg}`);
+      console.log(`[t=${ev.t.toFixed(2)}s] ${ev.kind.padEnd(7)} ${ev.msg}`);
     }
+  }
+
+  /** 注册玩家；自动放置主城 */
+  addPlayer(player: Player): void {
+    this.players.push(player);
+    const r = this._lookupRace(player.race);
+    const castleId = r?.castleAsset ?? `${player.race}_castle`;
+    const tpl = this._lookupBuilding(castleId);
+    if (!tpl) throw new Error(`No castle template for race ${player.race} (id=${castleId})`);
+    const laneY = this.balance.laneLength / 2;
+    const y = player.side === Side.Left ? -laneY : laneY;
+    const b = this.placeBuilding(tpl, player.side, new Vec2(0, y));
+    player.ownedBuildings.push(b);
   }
 
   /** 放置建筑（castle/tower/barracks/special/legendary） */
@@ -84,6 +98,9 @@ export class BattleSim {
   tick(): void {
     this.now += this.dt;
 
+    // 0. 经济结算 + 策略出牌
+    this._tickPlayers();
+
     // 1. 建筑出兵
     for (const b of this.buildings) {
       if (!b.alive) continue;
@@ -92,10 +109,11 @@ export class BattleSim {
       if (this.now < b.nextSpawnAt) continue;
       const tpl = this._lookupUnit(b.tpl.spawns);
       if (!tpl) { b.nextSpawnAt += b.tpl.spawnIntervalSec; continue; }
-      // 在建筑前方一个身位生成
       const offset = 60 * (b.side === Side.Left ? 1 : -1);
       const u = new Unit(tpl, b.side, new Vec2(b.pos.x, b.pos.y + offset));
       this.units.push(u);
+      const owner = this.players.find(p => p.side === b.side);
+      if (owner) owner.stats.unitsSpawned++;
       this.log({ t: this.now, kind: "spawn", msg: `${sideTag(b.side)} ${tpl.nameCn} #${u.id}` });
       b.nextSpawnAt = this.now + b.tpl.spawnIntervalSec;
     }
@@ -113,10 +131,10 @@ export class BattleSim {
       else if (b.tpl.kind === "tower") this._buildingAttackStep(b, this.balance.tower.attackDamage, this.balance.tower.attackType, this.balance.tower.attackRange, this.balance.tower.attackSpeed);
     }
 
-    // 4. 清尸体（简化：立即移除死亡单位）
+    // 4. 清尸体
     this.units = this.units.filter(u => u.alive || (this.now - u.deadAt) < this.balance.rules.deathDissipateSec);
 
-    // 5. 判胜 (仅当双方都放过主城时才触发)
+    // 5. 判胜
     if (this._hasLeftCastleEver && this._hasRightCastleEver) {
       const leftCastle = this.castle(Side.Left);
       const rightCastle = this.castle(Side.Right);
@@ -126,17 +144,88 @@ export class BattleSim {
     }
   }
 
-  // ---- 内部 ----
+  // ---- 内部：玩家 ----
 
-  /** 查模板（避免 BattleSim 直接 import DataLoader 造成测试耦合） */
-  private _unitLookup?: (id: string) => UnitTemplate | undefined;
-  setUnitLookup(f: (id: string) => UnitTemplate | undefined) { this._unitLookup = f; }
-  private _lookupUnit(id: string): UnitTemplate | undefined {
-    return this._unitLookup ? this._unitLookup(id) : undefined;
+  private _tickPlayers(): void {
+    // 收入结算
+    for (const p of this.players) {
+      while (this.now >= p.nextIncomeAt) {
+        const n = p.incomePerInterval(this.balance.baseIncome);
+        p.earn(n);
+        p.nextIncomeAt += this.balance.incomeIntervalSec;
+        this.log({ t: this.now, kind: "income", msg: `${p.name} +${n} gold (total ${p.gold}, income ${n}/${this.balance.incomeIntervalSec}s)` });
+      }
+    }
+
+    // 策略出牌
+    for (const p of this.players) {
+      if (!p.strategy) continue;
+      const slots = this._freeSlots(p);
+      if (slots.length === 0) continue;
+      const ctx = {
+        now: this.now,
+        gold: p.gold,
+        income: p.incomePerInterval(this.balance.baseIncome),
+        availableSlots: slots.length,
+        ownedBuildings: p.ownedBuildings as readonly Building[],
+        canAfford: (bid: string): boolean => {
+          const tpl = this._lookupBuilding(bid);
+          return !!tpl && p.gold >= (tpl.cost ?? 0);
+        },
+        ownedCountOf: (bid: string): number => {
+          return p.ownedBuildings.filter(b => b.alive && b.tpl.id === bid).length;
+        },
+      };
+      const want = p.strategy.decide(ctx);
+      if (!want) continue;
+      const tpl = this._lookupBuilding(want);
+      if (!tpl) continue;
+      const cost = tpl.cost ?? 0;
+      if (!p.spend(cost)) continue;
+      const slot = slots[0]!;
+      const b = this.placeBuilding(tpl, p.side, slot);
+      p.ownedBuildings.push(b);
+      this.log({ t: this.now, kind: "build", msg: `${p.name} builds ${tpl.nameCn} @(${slot.x.toFixed(0)},${slot.y.toFixed(0)}) -${cost} gold (${p.gold} left)` });
+    }
   }
 
+  /** 返回该玩家尚未占用的槽位 (按距主城近 → 远 排序) */
+  private _freeSlots(p: Player): Vec2[] {
+    const all = this._slotPositions(p.side);
+    const used = new Set(p.ownedBuildings.filter(b => b.alive).map(b => `${b.pos.x.toFixed(0)},${b.pos.y.toFixed(0)}`));
+    return all.filter(s => !used.has(`${s.x.toFixed(0)},${s.y.toFixed(0)}`));
+  }
+
+  /** 己方半场 3 列 × 4 行 = 12 个建筑槽位 (距主城由近到远) */
+  private _slotPositions(side: Side): Vec2[] {
+    const laneY = this.balance.laneLength / 2;
+    const sign = side === Side.Left ? -1 : 1;
+    const slots: Vec2[] = [];
+    const cols = [-260, 0, 260];
+    const rowBaseY = laneY - 300;   // 距主城 300 的首排
+    for (let r = 0; r < 4; r++) {
+      for (const cx of cols) {
+        slots.push(new Vec2(cx, sign * (rowBaseY - r * 280)));
+      }
+    }
+    return slots;
+  }
+
+  // ---- 内部：模板查找 ----
+
+  private _unitLookup?: (id: string) => UnitTemplate | undefined;
+  private _buildingLookup?: (id: string) => BuildingTemplate | undefined;
+  private _raceLookup?: (id: string) => RaceDef | undefined;
+  setUnitLookup(f: (id: string) => UnitTemplate | undefined) { this._unitLookup = f; }
+  setBuildingLookup(f: (id: string) => BuildingTemplate | undefined) { this._buildingLookup = f; }
+  setRaceLookup(f: (id: string) => RaceDef | undefined) { this._raceLookup = f; }
+  private _lookupUnit(id: string): UnitTemplate | undefined { return this._unitLookup ? this._unitLookup(id) : undefined; }
+  private _lookupBuilding(id: string): BuildingTemplate | undefined { return this._buildingLookup ? this._buildingLookup(id) : undefined; }
+  private _lookupRace(id: string): RaceDef | undefined { return this._raceLookup ? this._raceLookup(id) : undefined; }
+
+  // ---- 内部：单位 AI ----
+
   private _unitStep(u: Unit): void {
-    // 正在挥击中：到帧触发伤害
     if (u.swingAt !== null && u.swingTarget) {
       if (this.now >= u.swingAt) {
         const t = u.swingTarget;
@@ -155,25 +244,22 @@ export class BattleSim {
       return;
     }
 
-    // 找最近目标（单位 + 敌方建筑）
     const target = this._findTarget(u);
     if (target) {
-      const dist = "pos" in target ? Vec2.distance(u.pos, target.pos) : Infinity;
+      const dist = Vec2.distance(u.pos, target.pos);
       if (dist <= u.tpl.attack.range + 1) {
         if (this.now >= u.nextAttackReadyAt) {
           u.swingAt = this.now + u.tpl.attack.attackPoint;
-          u.swingTarget = target as Unit; // 为简化，建筑复用 takeDamage 路径
+          u.swingTarget = target as Unit;
           u.nextAttackReadyAt = this.now + u.tpl.attack.speed;
         }
         return;
       }
-      // 向目标移动
       const dir = new Vec2(target.pos.x - u.pos.x, target.pos.y - u.pos.y).normalize();
       u.pos = u.pos.add(dir.mul(u.tpl.movement.speed * this.dt));
       return;
     }
 
-    // 无目标：向敌方主城方向推进
     const dy = u.forwardSign() * u.tpl.movement.speed * this.dt;
     u.pos = new Vec2(u.pos.x, u.pos.y + dy);
   }
@@ -195,7 +281,8 @@ export class BattleSim {
   }
 
   private _buildingAttackStep(b: Building, dmg: number, atkType: import("./Enums.ts").DamageType, range: number, speed: number): void {
-    if (this.now < (b as unknown as { nextAttackReadyAt?: number }).nextAttackReadyAt!) return;
+    const state = b as unknown as { nextAttackReadyAt?: number };
+    if (state.nextAttackReadyAt !== undefined && this.now < state.nextAttackReadyAt) return;
     let closest: Unit | null = null;
     let cd = Infinity;
     for (const e of this.units) {
@@ -210,7 +297,7 @@ export class BattleSim {
       closest.deadAt = this.now;
       this.log({ t: this.now, kind: "death", msg: `${sideTag(closest.side)} ${closest.tpl.nameCn}#${closest.id} died (by ${b.tpl.nameCn})` });
     }
-    (b as unknown as { nextAttackReadyAt: number }).nextAttackReadyAt = this.now + speed;
+    state.nextAttackReadyAt = this.now + speed;
   }
 }
 

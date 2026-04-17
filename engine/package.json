@@ -8,6 +8,7 @@
     "start": "node --experimental-strip-types --disable-warning=ExperimentalWarning src/Main.ts",
     "duel":  "node --experimental-strip-types --disable-warning=ExperimentalWarning scenarios/duel.ts",
     "match": "node --experimental-strip-types --disable-warning=ExperimentalWarning scenarios/match.ts",
+    "economy": "node --experimental-strip-types --disable-warning=ExperimentalWarning scenarios/economy-match.ts",
     "test":  "node --experimental-strip-types --disable-warning=ExperimentalWarning scenarios/damage-test.ts"
   },
   "engines": {

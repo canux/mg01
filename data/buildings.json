@@ -6,6 +6,11 @@
     { "id": "ud_castle",       "race": "undead",   "nameCn": "不死主城",    "kind": "castle",   "hp": 5000, "armor": 5, "armorType": "fortified", "assetKey": "ud_castle" },
     { "id": "ne_castle",       "race": "nightelf", "nameCn": "精灵主城",    "kind": "castle",   "hp": 5000, "armor": 5, "armorType": "fortified", "assetKey": "ne_castle" },
 
+    { "id": "human_goldmine",  "race": "human",    "nameCn": "人族金矿",    "kind": "economy",  "hp": 800, "armor": 3, "armorType": "fortified", "cost": 250, "buildTimeSec": 20, "incomeBonusPer10s": 5, "assetKey": "human_goldmine" },
+    { "id": "orc_goldmine",    "race": "orc",      "nameCn": "兽族金矿",    "kind": "economy",  "hp": 800, "armor": 3, "armorType": "fortified", "cost": 250, "buildTimeSec": 20, "incomeBonusPer10s": 5, "assetKey": "orc_goldmine" },
+    { "id": "ud_haunted",      "race": "undead",   "nameCn": "闹鬼金矿",    "kind": "economy",  "hp": 800, "armor": 3, "armorType": "fortified", "cost": 250, "buildTimeSec": 20, "incomeBonusPer10s": 5, "assetKey": "ud_haunted" },
+    { "id": "ne_entangledmine","race": "nightelf", "nameCn": "缠绕金矿",    "kind": "economy",  "hp": 800, "armor": 3, "armorType": "fortified", "cost": 250, "buildTimeSec": 20, "incomeBonusPer10s": 5, "assetKey": "ne_entangledmine" },
+
     { "id": "human_tower",     "race": "human",    "nameCn": "人族箭塔",    "kind": "tower",    "hp": 800, "armor": 5, "armorType": "fortified", "cost": 200, "buildTimeSec": 15, "assetKey": "human_tower" },
     { "id": "orc_tower",       "race": "orc",      "nameCn": "兽族瞭望塔",  "kind": "tower",    "hp": 800, "armor": 5, "armorType": "fortified", "cost": 200, "buildTimeSec": 15, "assetKey": "orc_tower" },
     { "id": "ud_tower",        "race": "undead",   "nameCn": "尖塔",        "kind": "tower",    "hp": 800, "armor": 5, "armorType": "fortified", "cost": 200, "buildTimeSec": 15, "assetKey": "ud_tower" },

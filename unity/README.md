@@ -9,11 +9,16 @@ TS `engine/src/*` 是权威实现；Unity 侧逐文件对应翻译，便于双�
 |---|---|---|---|
 | Core (Enums) | `engine/src/Enums.ts` | `Assets/Mg01/Core/Enums.cs` | ✅ |
 | DamageCalc | `engine/src/DamageCalc.ts` | `Assets/Mg01/Core/DamageCalc.cs` | ✅ |
-| DamageMatrix | `data/damage_matrix.json` | `Assets/Mg01/Core/DamageMatrix.cs` | ✅ (硬编码) |
-| Vec2 | `engine/src/Vec2.ts` | `Assets/Mg01/Core/Vec2Ext.cs` | ✅ (UnityEngine.Vector2 + 扩展) |
-| Templates → ScriptableObject | `engine/src/Templates.ts` | (B2) | ⏳ |
-| BattleSim / Unit / Building | `engine/src/BattleSim.ts` | (B3) | ⏳ |
-| Projectile | `engine/src/Projectile.ts` | (B3) | ⏳ |
+| DamageMatrix | `data/damage_matrix.json` | `Assets/Mg01/Core/DamageMatrix.cs` | ✅ 硬编码 + Override() 支持 JSON 覆盖 |
+| Vec2 | `engine/src/Vec2.ts` | `Assets/Mg01/Core/Vec2Ext.cs` | ✅ UnityEngine.Vector2 + 扩展 |
+| Templates DTO | `engine/src/Templates.ts` | `Assets/Mg01/Templates/Templates.cs` | ✅ [Serializable] DTO |
+| JSON Loader | `engine/src/DataLoader.ts` | `Assets/Mg01/Loaders/JsonLoader.cs` | ✅ JsonUtility 版 (matrix 需 Newtonsoft) |
+| Unit / Building / Projectile | `engine/src/{Unit,Building,Projectile}.ts` | `Assets/Mg01/Sim/*.cs` | ✅ 完整移植 (MonoBehaviour) |
+| Buff / UnitMods | `engine/src/SpellEngine.ts` | `Assets/Mg01/Sim/Buff.cs` | ✅ |
+| Player | `engine/src/Player.ts` | `Assets/Mg01/Sim/Player.cs` | ✅ |
+| BattleSim 主循环 | `engine/src/BattleSim.ts` | `Assets/Mg01/Sim/BattleSim.cs` | ⚠️ 骨架 (各 Tick* 方法 TODO) |
+| Strategy / SpellEngine.autoCast | TS 同名 | (待移植) | ⏳ |
+| 投射物 / 法术效果细节 | TS 同名 | (待移植) | ⏳ |
 
 ## 用法
 

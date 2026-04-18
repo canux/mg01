@@ -101,6 +101,8 @@ export class Renderer {
     for (const b of state.buildings) this._drawBuilding(b);
     // 单位后（上层）
     for (const u of state.units) this._drawUnit(u);
+    // 投射物（在单位之上）
+    if (state.projectiles) for (const p of state.projectiles) this._drawProjectile(p);
     // 顶层：主城 HP 条浮于单位之上
     for (const b of state.buildings) if (b.kind === "castle") this._drawCastleHpOverlay(b);
   }
@@ -255,6 +257,46 @@ export class Renderer {
       ctx.fillStyle = hpColor(u.hp / u.hpMax);
       ctx.fillRect(x - w / 2, yy, w * (u.hp / u.hpMax), h);
     }
+  }
+
+  _drawProjectile(p) {
+    const ctx = this.ctx;
+    const x = this._wx(p.x);
+    const y = this._wy(p.y);
+    const tx = this._wx(p.tx);
+    const ty = this._wy(p.ty);
+    const dx = tx - x, dy = ty - y;
+    const ang = Math.atan2(dy, dx);
+    const color = p.side === 0 ? "#A8D5FF" : "#FFB39A";
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(ang);
+    if (p.visualKind === "arrow") {
+      ctx.fillStyle = color;
+      ctx.strokeStyle = "rgba(0,0,0,0.6)";
+      ctx.beginPath();
+      ctx.moveTo(7, 0); ctx.lineTo(-5, 1.5); ctx.lineTo(-5, -1.5);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+    } else if (p.visualKind === "bolt") {
+      ctx.fillStyle = color;
+      ctx.fillRect(-4, -1, 8, 2);
+    } else if (p.visualKind === "shell") {
+      ctx.fillStyle = "#666";
+      ctx.strokeStyle = "#222";
+      ctx.beginPath();
+      ctx.arc(0, 0, 4, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+    } else { // magic
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 6);
+      grad.addColorStop(0, color);
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0, 0, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
   }
 }
 

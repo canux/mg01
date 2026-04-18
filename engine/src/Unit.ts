@@ -5,6 +5,9 @@ import { Vec2 } from "./Vec2.ts";
 import type { Side } from "./Enums.ts";
 import type { UnitTemplate } from "./Templates.ts";
 import { DamageCalc } from "./DamageCalc.ts";
+import type { Building } from "./Building.ts";
+
+export type AttackTarget = Unit | Building;
 
 export class Unit {
   static _nextId = 1;
@@ -21,8 +24,8 @@ export class Unit {
   nextAttackReadyAt = 0;
   /** 攻击动画关键帧触发时间；null 表示当前不在挥击 */
   swingAt: number | null = null;
-  /** 正在挥向的目标 */
-  swingTarget: Unit | null = null;
+  /** 正在挥向的目标（Unit 或 Building） */
+  swingTarget: AttackTarget | null = null;
 
   alive = true;
   deadAt = 0;
@@ -46,7 +49,7 @@ export class Unit {
     return actual;
   }
 
-  distTo(other: Unit): number {
+  distTo(other: { pos: Vec2 }): number {
     return Vec2.distance(this.pos, other.pos);
   }
 

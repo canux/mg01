@@ -5,12 +5,13 @@ import { Vec2 } from "./Vec2.ts";
 import { Unit } from "./Unit.ts";
 import { Building } from "./Building.ts";
 import { Side } from "./Enums.ts";
+import { Projectile, inferProjectile, isRangedAttack } from "./Projectile.ts";
 import type { UnitTemplate, BuildingTemplate, BalanceDef, RaceDef } from "./Templates.ts";
 import type { Player } from "./Player.ts";
 
 export interface SimEvent {
   t: number;
-  kind: "spawn" | "attack" | "death" | "building_down" | "castle_down" | "income" | "build" | "phase" | "end";
+  kind: "spawn" | "attack" | "death" | "building_down" | "castle_down" | "income" | "build" | "phase" | "projectile" | "end";
   msg: string;
 }
 
@@ -43,6 +44,7 @@ export class BattleSim {
   units: Unit[] = [];
   buildings: Building[] = [];
   players: Player[] = [];
+  projectiles: Projectile[] = [];
   events: SimEvent[] = [];
   winner: Side | null = null;
   ended = false;
@@ -147,6 +149,9 @@ export class BattleSim {
       if (b.tpl.kind === "castle") this._buildingAttackStep(b, this.balance.castle.attackDamage, this.balance.castle.attackType, this.balance.castle.attackRange, this.balance.castle.attackSpeed);
       else if (b.tpl.kind === "tower") this._buildingAttackStep(b, this.balance.tower.attackDamage, this.balance.tower.attackType, this.balance.tower.attackRange, this.balance.tower.attackSpeed);
     }
+
+    // 3.5 投射物推进 + 命中
+    this._tickProjectiles();
 
     // 4. 清尸体
     this.units = this.units.filter(u => u.alive || (this.now - u.deadAt) < this.balance.rules.deathDissipateSec);
@@ -279,13 +284,32 @@ export class BattleSim {
     if (u.swingAt !== null && u.swingTarget) {
       if (this.now >= u.swingAt) {
         const t = u.swingTarget;
-        if (t.alive && u.distTo(t) <= u.tpl.attack.range + 30) {
-          const actual = t.takeDamage(u.tpl.attack.damage, u.tpl.attack.damageType);
-          this.log({ t: this.now, kind: "attack",
-            msg: `${sideTag(u.side)} ${u.tpl.nameCn}#${u.id} -> ${sideTag(t.side)} ${t.tpl.nameCn}#${t.id} for ${actual.toFixed(1)}` });
-          if (!t.alive) {
-            t.deadAt = this.now;
-            this.log({ t: this.now, kind: "death", msg: `${sideTag(t.side)} ${t.tpl.nameCn}#${t.id} died` });
+        if (t.alive && (isRangedAttack(u.tpl.attack.range) || u.distTo(t) <= u.tpl.attack.range + 30)) {
+          if (isRangedAttack(u.tpl.attack.range)) {
+            // 远程：发射投射物，命中再结算伤害
+            const meta = inferProjectile(u.tpl.role, u.tpl.attack.damageType);
+            const proj = new Projectile({
+              side: u.side,
+              pos: u.pos,
+              target: t,
+              damage: u.tpl.attack.damage,
+              damageType: u.tpl.attack.damageType,
+              speed: meta.speed,
+              aoeRadius: u.tpl.attack.aoeRadius ?? 0,
+              visualKind: meta.visualKind,
+            });
+            this.projectiles.push(proj);
+            this.log({ t: this.now, kind: "projectile",
+              msg: `${sideTag(u.side)} ${u.tpl.nameCn}#${u.id} fires ${meta.visualKind} -> ${sideTag(t.side)} ${t.tpl.nameCn}#${t.id}` });
+          } else {
+            // 近战：命中即伤害
+            const actual = t.takeDamage(u.tpl.attack.damage, u.tpl.attack.damageType);
+            this.log({ t: this.now, kind: "attack",
+              msg: `${sideTag(u.side)} ${u.tpl.nameCn}#${u.id} -> ${sideTag(t.side)} ${t.tpl.nameCn}#${t.id} for ${actual.toFixed(1)}` });
+            if (!t.alive) {
+              t.deadAt = this.now;
+              this.log({ t: this.now, kind: "death", msg: `${sideTag(t.side)} ${t.tpl.nameCn}#${t.id} died` });
+            }
           }
         }
         u.swingAt = null;
@@ -328,6 +352,51 @@ export class BattleSim {
       if (d < bestD) { bestD = d; best = b; }
     }
     return best;
+  }
+
+  // ---- 内部：投射物 ----
+
+  private _tickProjectiles(): void {
+    if (this.projectiles.length === 0) return;
+    for (const p of this.projectiles) {
+      if (!p.alive) continue;
+      // 目标已死/已消失：投射物自销毁（扔到目标尸体位置太刻意）
+      if (!p.target.alive) { p.alive = false; continue; }
+      const hit = p.step(this.dt);
+      if (!hit) continue;
+      p.alive = false;
+      p.hitAt = this.now;
+      this._applyProjectileHit(p);
+    }
+    this.projectiles = this.projectiles.filter(p => p.alive);
+  }
+
+  private _applyProjectileHit(p: Projectile): void {
+    const apply = (target: Unit | Building): void => {
+      if (!target.alive) return;
+      const actual = target.takeDamage(p.damage, p.damageType);
+      this.log({ t: this.now, kind: "attack",
+        msg: `${sideTag(p.side)} ${p.visualKind} -> ${sideTag(target.side)} ${target.tpl.nameCn}#${target.id} for ${actual.toFixed(1)}` });
+      if (!target.alive) {
+        if (target instanceof Unit) target.deadAt = this.now;
+        this.log({ t: this.now, kind: target instanceof Building && target.tpl.kind === "castle" ? "castle_down" : "death",
+          msg: `${sideTag(target.side)} ${target.tpl.nameCn}#${target.id} died` });
+      }
+    };
+
+    if (p.aoeRadius > 0) {
+      // AOE：圆心 = 命中位置；命中所有敌方 (单位 + 建筑)
+      for (const e of this.units) {
+        if (!e.alive || e.side === p.side) continue;
+        if (Vec2.distance(p.pos, e.pos) <= p.aoeRadius) apply(e);
+      }
+      for (const b of this.buildings) {
+        if (!b.alive || b.side === p.side) continue;
+        if (Vec2.distance(p.pos, b.pos) <= p.aoeRadius) apply(b);
+      }
+    } else {
+      apply(p.target);
+    }
   }
 
   private _buildingAttackStep(b: Building, dmg: number, atkType: import("./Enums.ts").DamageType, range: number, speed: number): void {

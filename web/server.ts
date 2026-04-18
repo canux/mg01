@@ -124,6 +124,16 @@ function snapshot(s: Session) {
     hp: Math.max(0, Math.round(u.hp)),
     hpMax: u.tpl.hp,
   }));
+  const ps = sim.projectiles.filter(p => p.alive).map(p => ({
+    id: p.id,
+    side: p.side,
+    x: Math.round(p.pos.x),
+    y: Math.round(p.pos.y),
+    tx: Math.round(p.target.pos.x),
+    ty: Math.round(p.target.pos.y),
+    visualKind: p.visualKind,
+    aoeRadius: p.aoeRadius,
+  }));
   return {
     t: +sim.now.toFixed(1),
     maxT: balance.rules.maxBattleSec,
@@ -134,6 +144,7 @@ function snapshot(s: Session) {
     players,
     buildings: bs,
     units: us,
+    projectiles: ps,
     events: s.recentEvents.slice(-10),
   };
 }

@@ -20,10 +20,55 @@ export class HUD {
       log:      document.getElementById("log"),
       pickL:    document.getElementById("pick-left"),
       pickR:    document.getElementById("pick-right"),
+      modeL:    document.getElementById("mode-left"),
+      modeR:    document.getElementById("mode-right"),
       btnNew:   document.getElementById("btn-new"),
+      sheet:    document.getElementById("build-sheet"),
+      sheetSlot:document.getElementById("sheet-slot"),
+      sheetList:document.getElementById("sheet-list"),
+      sheetClose:document.getElementById("sheet-close"),
     };
     this._lastEventT = -1;
+    this._buildingsByRace = new Map();   // race -> array (cached)
+    this.el.sheetClose.addEventListener("click", () => this.closeBuildSheet());
   }
+
+  modes() {
+    return { left: this.el.modeL.value, right: this.el.modeR.value };
+  }
+
+  async openBuildSheet(slot, raceForSide, currentGold, onPick) {
+    let list = this._buildingsByRace.get(raceForSide);
+    if (!list) {
+      try {
+        list = await fetch(`/buildings?race=${encodeURIComponent(raceForSide)}`).then(r => r.json());
+        this._buildingsByRace.set(raceForSide, list);
+      } catch {
+        list = [];
+      }
+    }
+    this.el.sheetSlot.textContent = `#${slot.idx} · ${slot.side === 0 ? "L" : "R"}`;
+    this.el.sheetList.innerHTML = "";
+    for (const b of list) {
+      const li = document.createElement("li");
+      const afford = currentGold >= b.cost;
+      if (!afford) li.classList.add("unaffordable");
+      li.innerHTML =
+        `<span class="nm">${b.nameCn}</span>` +
+        `<span class="kind">${b.kind}${b.spawns ? ` · ${b.buildTimeSec}s` : ""}</span>` +
+        `<span class="cost">${b.cost}g</span>`;
+      if (afford) {
+        li.addEventListener("click", () => {
+          onPick(b.id);
+          this.closeBuildSheet();
+        });
+      }
+      this.el.sheetList.appendChild(li);
+    }
+    this.el.sheet.classList.remove("hidden");
+  }
+
+  closeBuildSheet() { this.el.sheet.classList.add("hidden"); }
 
   async populatePickers() {
     try {
@@ -52,7 +97,7 @@ export class HUD {
 
   onNewGame(cb) {
     this.el.btnNew.addEventListener("click", () => {
-      cb(this.el.pickL.value, this.el.pickR.value);
+      cb(this.el.pickL.value, this.el.pickR.value, this.el.modeL.value, this.el.modeR.value);
     });
   }
 

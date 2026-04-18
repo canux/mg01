@@ -21,8 +21,11 @@ const SNAPSHOT_INTERVAL_MS = 100;     // 每 tick 推一帧
 
 // ---- 战斗 ----
 
+type SideMode = "ai" | "player";
+
 interface Session {
   sim: BattleSim;
+  modes: { left: SideMode; right: SideMode };
   recentEvents: { t: number; kind: string; msg: string }[];
   phase: number;
   timer: NodeJS.Timeout | null;
@@ -31,7 +34,7 @@ interface Session {
 
 let current: Session | null = null;
 
-function newSim(leftRace: string, rightRace: string): Session {
+function newSim(leftRace: string, rightRace: string, leftMode: SideMode, rightMode: SideMode): Session {
   const sim = new BattleSim({ balance, verbose: false });
   sim.setUnitLookup(id => units.get(id));
   sim.setBuildingLookup(id => buildings.get(id));
@@ -39,12 +42,12 @@ function newSim(leftRace: string, rightRace: string): Session {
 
   const lp = new Player(Side.Left,  leftRace,  `L-${leftRace}`,  balance.startGold, balance.incomeIntervalSec);
   const rp = new Player(Side.Right, rightRace, `R-${rightRace}`, balance.startGold, balance.incomeIntervalSec);
-  lp.strategy = STRATEGIES[leftRace]  ?? STRATEGIES.human;
-  rp.strategy = STRATEGIES[rightRace] ?? STRATEGIES.orc;
+  if (leftMode === "ai")  lp.strategy = STRATEGIES[leftRace]  ?? STRATEGIES.human;
+  if (rightMode === "ai") rp.strategy = STRATEGIES[rightRace] ?? STRATEGIES.orc;
   sim.addPlayer(lp);
   sim.addPlayer(rp);
 
-  return { sim, recentEvents: [], phase: 0, timer: null, listeners: new Set() };
+  return { sim, modes: { left: leftMode, right: rightMode }, recentEvents: [], phase: 0, timer: null, listeners: new Set() };
 }
 
 const STRATEGIES: Record<string, ReturnType<typeof buildOrder>> = {
@@ -134,6 +137,14 @@ function snapshot(s: Session) {
     visualKind: p.visualKind,
     aoeRadius: p.aoeRadius,
   }));
+  // 槽位 (双方各 12 个)。idx 与 sim.slotPositions 顺序一致
+  const slots: { side: number; idx: number; x: number; y: number; free: boolean }[] = [];
+  for (const side of [Side.Left, Side.Right]) {
+    const all = sim.slotPositions(side);
+    all.forEach((pos, idx) => {
+      slots.push({ side, idx, x: Math.round(pos.x), y: Math.round(pos.y), free: sim.slotIsFree(side, idx) });
+    });
+  }
   return {
     t: +sim.now.toFixed(1),
     maxT: balance.rules.maxBattleSec,
@@ -141,10 +152,12 @@ function snapshot(s: Session) {
     winner: sim.winner,
     laneLength: balance.laneLength,
     laneWidth: balance.laneWidth,
+    modes: s.modes,
     players,
     buildings: bs,
     units: us,
     projectiles: ps,
+    slots,
     events: s.recentEvents.slice(-10),
   };
 }
@@ -183,7 +196,7 @@ const server = createServer((req, res) => {
   const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
 
   if (url.pathname === "/stream") {
-    if (!current) current = newSim("human", "orc");
+    if (!current) current = newSim("human", "orc", "ai", "ai");
     res.writeHead(200, {
       "content-type": "text/event-stream",
       "cache-control": "no-cache",
@@ -200,17 +213,50 @@ const server = createServer((req, res) => {
   if (url.pathname === "/new" && req.method === "POST") {
     const left = url.searchParams.get("left") ?? "human";
     const right = url.searchParams.get("right") ?? "orc";
+    const leftMode  = (url.searchParams.get("leftMode")  === "player" ? "player" : "ai") as SideMode;
+    const rightMode = (url.searchParams.get("rightMode") === "player" ? "player" : "ai") as SideMode;
     if (current?.timer) clearInterval(current.timer);
     for (const l of current?.listeners ?? []) l.end();
-    current = newSim(left, right);
+    current = newSim(left, right, leftMode, rightMode);
     res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({ ok: true, left, right }));
+    res.end(JSON.stringify({ ok: true, left, right, leftMode, rightMode }));
+    return;
+  }
+
+  if (url.pathname === "/place" && req.method === "POST") {
+    if (!current) { res.writeHead(400).end(JSON.stringify({ ok: false, reason: "no session" })); return; }
+    const side = Number(url.searchParams.get("side") ?? "0") as 0 | 1;
+    const buildingId = url.searchParams.get("id") ?? "";
+    const slotIdx = Number(url.searchParams.get("slot") ?? "-1");
+    const sideMode = side === 0 ? current.modes.left : current.modes.right;
+    if (sideMode !== "player") {
+      res.writeHead(403, { "content-type": "application/json" });
+      res.end(JSON.stringify({ ok: false, reason: "side is AI-controlled" }));
+      return;
+    }
+    const r = current.sim.manualBuild(side, buildingId, slotIdx);
+    res.writeHead(r.ok ? 200 : 400, { "content-type": "application/json" });
+    res.end(JSON.stringify(r));
     return;
   }
 
   if (url.pathname === "/races") {
     res.writeHead(200, { "content-type": "application/json" });
     res.end(JSON.stringify(races.map(r => ({ id: r.id, nameCn: r.nameCn, color: r.color }))));
+    return;
+  }
+
+  if (url.pathname === "/buildings") {
+    const race = url.searchParams.get("race");
+    const list = Array.from(buildings.values())
+      .filter(b => !race || b.race === race)
+      .filter(b => b.kind !== "castle")  // 主城不可手建
+      .map(b => ({ id: b.id, nameCn: b.nameCn, race: b.race, kind: b.kind, cost: b.cost ?? 0,
+                   buildTimeSec: b.buildTimeSec ?? 0, spawns: b.spawns ?? null,
+                   incomeBonusPer10s: b.incomeBonusPer10s ?? 0, assetKey: b.assetKey }))
+      .sort((a, b) => (a.cost - b.cost) || a.nameCn.localeCompare(b.nameCn));
+    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(list));
     return;
   }
 

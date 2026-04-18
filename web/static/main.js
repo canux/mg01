@@ -1,4 +1,4 @@
-// 入口：SSE 接收 + 渲染循环 + 新局按钮
+// 入口：SSE 接收 + 渲染循环 + 新局按钮 + 玩家点击放置
 import { Renderer } from "./renderer.js";
 import { HUD } from "./ui.js";
 
@@ -37,15 +37,40 @@ function renderLoop() {
   requestAnimationFrame(renderLoop);
 }
 
+function setupTap() {
+  const handler = async (ev) => {
+    if (!latestState) return;
+    const rect = canvas.getBoundingClientRect();
+    const cx = (ev.clientX ?? ev.touches?.[0]?.clientX) - rect.left;
+    const cy = (ev.clientY ?? ev.touches?.[0]?.clientY) - rect.top;
+    const slot = renderer.hitSlot(cx, cy, latestState);
+    if (!slot) return;
+    ev.preventDefault();
+    const player = latestState.players.find(p => p.side === slot.side);
+    if (!player) return;
+    hud.openBuildSheet(slot, player.race, player.gold, async (buildingId) => {
+      const r = await fetch(
+        `/place?side=${slot.side}&id=${encodeURIComponent(buildingId)}&slot=${slot.idx}`,
+        { method: "POST" }
+      ).then(r => r.json()).catch(err => ({ ok: false, reason: String(err) }));
+      if (!r.ok) console.warn("place failed:", r.reason);
+    });
+  };
+  canvas.addEventListener("click", handler);
+}
+
 async function main() {
   await renderer.loadSprites();
   await hud.populatePickers();
-  hud.onNewGame(async (left, right) => {
+  hud.onNewGame(async (left, right, leftMode, rightMode) => {
     hud.clearLog();
+    hud.closeBuildSheet();
     latestState = null;
-    await fetch(`/new?left=${left}&right=${right}`, { method: "POST" });
+    const qs = `left=${left}&right=${right}&leftMode=${leftMode}&rightMode=${rightMode}`;
+    await fetch(`/new?${qs}`, { method: "POST" });
     connect();
   });
+  setupTap();
   connect();
   requestAnimationFrame(renderLoop);
 }

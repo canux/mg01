@@ -160,3 +160,66 @@ button:active { transform: scale(0.97); }
 #log li.build { color: #f7c948; }
 #log li.phase { color: #ff8a3d; font-weight: 700; }
 #log li.end   { color: #fff; font-weight: 700; }
+
+/* ---- 模式选择小标签 ---- */
+select.mode {
+  flex: 0 0 auto;
+  padding: 6px 4px;
+  font-size: 11px;
+  background: var(--bg-2);
+  color: var(--mute);
+  width: 48px;
+}
+
+/* ---- 建造选择面板 (bottom sheet) ---- */
+#build-sheet {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  max-height: 60dvh;
+  background: var(--bg-2);
+  border-top: 1px solid var(--border);
+  border-radius: 14px 14px 0 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
+}
+#build-sheet.hidden { display: none; }
+.sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.sheet-title { font-size: 13px; font-weight: 700; color: var(--fg); }
+.sheet-title b { color: var(--gold); }
+.sheet-close {
+  background: transparent;
+  border: none;
+  color: var(--mute);
+  font-size: 22px;
+  line-height: 1;
+  padding: 0 6px;
+  cursor: pointer;
+}
+#sheet-list {
+  list-style: none;
+  overflow-y: auto;
+  padding: 6px 8px;
+}
+#sheet-list li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  padding: 10px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  align-items: center;
+}
+#sheet-list li:hover { background: rgba(255,255,255,0.04); }
+#sheet-list li.unaffordable { opacity: 0.4; cursor: not-allowed; }
+#sheet-list li .nm { font-weight: 600; }
+#sheet-list li .kind { color: var(--mute); font-size: 11px; }
+#sheet-list li .cost { color: var(--gold); font-weight: 700; }

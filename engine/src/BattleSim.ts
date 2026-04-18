@@ -251,6 +251,38 @@ export class BattleSim {
     return all.filter(s => !used.has(`${s.x.toFixed(0)},${s.y.toFixed(0)}`));
   }
 
+  /** 公共：所有槽位 (用于 viewer / 手动放置 UI) */
+  slotPositions(side: Side): Vec2[] { return this._slotPositions(side); }
+
+  /** 公共：判断某槽位是否已被占用 */
+  slotIsFree(side: Side, slotIdx: number): boolean {
+    const all = this._slotPositions(side);
+    if (slotIdx < 0 || slotIdx >= all.length) return false;
+    const slot = all[slotIdx]!;
+    const key = `${slot.x.toFixed(0)},${slot.y.toFixed(0)}`;
+    return !this.buildings.some(b => b.alive && b.side === side && `${b.pos.x.toFixed(0)},${b.pos.y.toFixed(0)}` === key);
+  }
+
+  /** 公共：玩家手动下单造建筑。返回 { ok, reason? } */
+  manualBuild(side: Side, buildingId: string, slotIdx: number): { ok: boolean; reason?: string } {
+    const p = this.players.find(pp => pp.side === side);
+    if (!p) return { ok: false, reason: "no such player" };
+    const tpl = this._lookupBuilding(buildingId);
+    if (!tpl) return { ok: false, reason: `unknown building ${buildingId}` };
+    if (tpl.race !== p.race) return { ok: false, reason: `race mismatch (${tpl.race} vs ${p.race})` };
+    const all = this._slotPositions(side);
+    if (slotIdx < 0 || slotIdx >= all.length) return { ok: false, reason: "slot index out of range" };
+    if (!this.slotIsFree(side, slotIdx)) return { ok: false, reason: "slot occupied" };
+    const cost = tpl.cost ?? 0;
+    if (!p.spend(cost)) return { ok: false, reason: `need ${cost} gold (have ${p.gold})` };
+    const slot = all[slotIdx]!;
+    const b = this.placeBuilding(tpl, side, slot);
+    p.ownedBuildings.push(b);
+    this.log({ t: this.now, kind: "build",
+      msg: `${p.name} (manual) builds ${tpl.nameCn} @slot${slotIdx} -${cost} gold (${p.gold} left)` });
+    return { ok: true };
+  }
+
   /** 己方半场 3 列 × 4 行 = 12 个建筑槽位 (距主城由近到远) */
   private _slotPositions(side: Side): Vec2[] {
     const laneY = this.balance.laneLength / 2;

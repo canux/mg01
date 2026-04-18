@@ -94,7 +94,7 @@ export class Renderer {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.viewW, this.viewH);
     this._drawLane();
-    this._drawSlots();
+    this._drawSlots(state);
     if (!state) return;
 
     // 建筑先（底层）
@@ -126,22 +126,68 @@ export class Renderer {
     ctx.setLineDash([]);
   }
 
-  _drawSlots() {
+  _drawSlots(state) {
     const ctx = this.ctx;
-    ctx.fillStyle = "rgba(255,255,255,0.04)";
-    const cols = [-260, 0, 260];
-    const rowBaseY = this.world.halfH - 300;
-    for (let r = 0; r < 4; r++) {
-      for (const cx of cols) {
-        for (const sign of [-1, 1]) {
-          const x = this._wx(cx);
-          const y = this._wy(sign * (rowBaseY - r * 280));
-          ctx.beginPath();
-          ctx.arc(x, y, 2, 0, Math.PI * 2);
-          ctx.fill();
+    // 默认底层暗色点（即使没有 state 也要画出格子）
+    if (!state || !state.slots) {
+      ctx.fillStyle = "rgba(255,255,255,0.04)";
+      const cols = [-260, 0, 260];
+      const rowBaseY = this.world.halfH - 300;
+      for (let r = 0; r < 4; r++) {
+        for (const cx of cols) {
+          for (const sign of [-1, 1]) {
+            const x = this._wx(cx);
+            const y = this._wy(sign * (rowBaseY - r * 280));
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
       }
+      return;
     }
+    // 玩家方的空槽用高亮虚线圆 (大、可点击)；占用槽不画
+    const modes = state.modes || { left: "ai", right: "ai" };
+    for (const slot of state.slots) {
+      const x = this._wx(slot.x);
+      const y = this._wy(slot.y);
+      const sideMode = slot.side === 0 ? modes.left : modes.right;
+      if (slot.free && sideMode === "player") {
+        ctx.save();
+        ctx.strokeStyle = slot.side === 0 ? "rgba(167,213,255,0.55)" : "rgba(255,179,154,0.55)";
+        ctx.fillStyle  = slot.side === 0 ? "rgba(59,127,217,0.10)"  : "rgba(185,74,43,0.10)";
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.arc(x, y, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        ctx.fillStyle = "rgba(255,255,255,0.04)";
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  /** 命中测试：返回点击落入的玩家方空槽 (含 side+idx)，否则 null */
+  hitSlot(cssX, cssY, state) {
+    if (!state || !state.slots) return null;
+    const modes = state.modes || { left: "ai", right: "ai" };
+    let best = null;
+    let bestD = 22 * 22;   // 22px 命中半径
+    for (const s of state.slots) {
+      if (!s.free) continue;
+      const sideMode = s.side === 0 ? modes.left : modes.right;
+      if (sideMode !== "player") continue;
+      const x = this._wx(s.x);
+      const y = this._wy(s.y);
+      const d = (x - cssX) * (x - cssX) + (y - cssY) * (y - cssY);
+      if (d < bestD) { bestD = d; best = s; }
+    }
+    return best;
   }
 
   _drawBuilding(b) {

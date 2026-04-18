@@ -36,16 +36,32 @@
       <div class="picker">
         <label>L</label>
         <select id="pick-left"></select>
+        <select id="mode-left" class="mode">
+          <option value="player">手玩</option>
+          <option value="ai" selected>AI</option>
+        </select>
       </div>
       <button id="btn-new" class="primary">新局</button>
       <div class="picker">
         <label>R</label>
         <select id="pick-right"></select>
+        <select id="mode-right" class="mode">
+          <option value="player">手玩</option>
+          <option value="ai" selected>AI</option>
+        </select>
       </div>
     </footer>
 
     <div id="log-panel">
       <ul id="log"></ul>
+    </div>
+
+    <div id="build-sheet" class="hidden">
+      <div class="sheet-head">
+        <span class="sheet-title">选择建造 (slot <b id="sheet-slot">?</b>)</span>
+        <button class="sheet-close" id="sheet-close">×</button>
+      </div>
+      <ul id="sheet-list"></ul>
     </div>
   </div>
 

@@ -6,12 +6,13 @@ import { Unit } from "./Unit.ts";
 import { Building } from "./Building.ts";
 import { Side } from "./Enums.ts";
 import { Projectile, inferProjectile, isRangedAttack } from "./Projectile.ts";
-import type { UnitTemplate, BuildingTemplate, BalanceDef, RaceDef } from "./Templates.ts";
+import { autoCast, applyEffect, UnitMods } from "./SpellEngine.ts";
+import type { UnitTemplate, BuildingTemplate, BalanceDef, RaceDef, SpellTemplate } from "./Templates.ts";
 import type { Player } from "./Player.ts";
 
 export interface SimEvent {
   t: number;
-  kind: "spawn" | "attack" | "death" | "building_down" | "castle_down" | "income" | "build" | "phase" | "projectile" | "end";
+  kind: "spawn" | "attack" | "death" | "building_down" | "castle_down" | "income" | "build" | "phase" | "projectile" | "spell" | "end";
   msg: string;
 }
 
@@ -137,9 +138,10 @@ export class BattleSim {
       b.nextSpawnAt = this.now + b.tpl.spawnIntervalSec;
     }
 
-    // 2. 单位 AI
+    // 2. 单位 AI (含法术)
     for (const u of this.units) {
       if (!u.alive) continue;
+      this._tickUnitSpellAndMana(u);
       this._unitStep(u);
     }
 
@@ -303,12 +305,15 @@ export class BattleSim {
   private _unitLookup?: (id: string) => UnitTemplate | undefined;
   private _buildingLookup?: (id: string) => BuildingTemplate | undefined;
   private _raceLookup?: (id: string) => RaceDef | undefined;
+  private _spellLookup?: (id: string) => SpellTemplate | undefined;
   setUnitLookup(f: (id: string) => UnitTemplate | undefined) { this._unitLookup = f; }
   setBuildingLookup(f: (id: string) => BuildingTemplate | undefined) { this._buildingLookup = f; }
   setRaceLookup(f: (id: string) => RaceDef | undefined) { this._raceLookup = f; }
+  setSpellLookup(f: (id: string) => SpellTemplate | undefined) { this._spellLookup = f; }
   private _lookupUnit(id: string): UnitTemplate | undefined { return this._unitLookup ? this._unitLookup(id) : undefined; }
   private _lookupBuilding(id: string): BuildingTemplate | undefined { return this._buildingLookup ? this._buildingLookup(id) : undefined; }
   private _lookupRace(id: string): RaceDef | undefined { return this._raceLookup ? this._raceLookup(id) : undefined; }
+  private _lookupSpell(id: string): SpellTemplate | undefined { return this._spellLookup ? this._spellLookup(id) : undefined; }
 
   // ---- 内部：单位 AI ----
 
@@ -351,23 +356,59 @@ export class BattleSim {
     }
 
     const target = this._findTarget(u);
+    const moveSpeed = UnitMods.moveSpeed(u, this.now);
     if (target) {
       const dist = Vec2.distance(u.pos, target.pos);
       if (dist <= u.tpl.attack.range + 1) {
         if (this.now >= u.nextAttackReadyAt) {
           u.swingAt = this.now + u.tpl.attack.attackPoint;
           u.swingTarget = target as Unit;
-          u.nextAttackReadyAt = this.now + u.tpl.attack.speed;
+          u.nextAttackReadyAt = this.now + UnitMods.attackInterval(u, this.now);
         }
         return;
       }
       const dir = new Vec2(target.pos.x - u.pos.x, target.pos.y - u.pos.y).normalize();
-      u.pos = u.pos.add(dir.mul(u.tpl.movement.speed * this.dt));
+      u.pos = u.pos.add(dir.mul(moveSpeed * this.dt));
       return;
     }
 
-    const dy = u.forwardSign() * u.tpl.movement.speed * this.dt;
+    const dy = u.forwardSign() * moveSpeed * this.dt;
     u.pos = new Vec2(u.pos.x, u.pos.y + dy);
+  }
+
+  /** 法术 + 法力回复 (caster 单位) */
+  private _tickUnitSpellAndMana(u: Unit): void {
+    // 0. 修剪过期 buff
+    UnitMods.prune(u, this.now);
+
+    // 1. 法力回复 (manaRegen 是每秒)
+    if (u.tpl.manaMax !== undefined && u.tpl.manaRegen) {
+      u.mana = Math.min(u.tpl.manaMax, u.mana + u.tpl.manaRegen * this.dt);
+    }
+
+    // 2. 有法力 + spellLookup 配置 → 走法术 AI (caster + legendary 都能放)
+    if (!u.tpl.manaMax || !this._spellLookup) return;
+
+    // 2a. 已经在施法 (castPoint 中) → 到点结算
+    if (u.pendingSpell) {
+      if (this.now >= u.pendingSpell.castAt) {
+        const { sp, target } = u.pendingSpell;
+        if (target.alive) {
+          const desc = applyEffect(u, sp, target, this.now, this.units);
+          this.log({ t: this.now, kind: "spell", msg: `${sideTag(u.side)} ${u.tpl.nameCn}#${u.id} casts ${sp.nameCn}: ${desc}` });
+        }
+        u.pendingSpell = null;
+      }
+      return;
+    }
+
+    // 2b. 选一个能放的法术
+    const pick = autoCast(u, this.now, this._lookupSpell.bind(this), this.units);
+    if (!pick) return;
+    const { spell, target } = pick;
+    u.mana -= spell.manaCost;
+    u.nextSpellReadyAt = this.now + Math.max(1.0, spell.castPoint + spell.cooldownSec);
+    u.pendingSpell = { sp: spell, target: target as Unit, castAt: this.now + spell.castPoint };
   }
 
   private _findTarget(u: Unit): Unit | Building | null {

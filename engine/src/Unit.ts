@@ -3,9 +3,10 @@
 
 import { Vec2 } from "./Vec2.ts";
 import type { Side } from "./Enums.ts";
-import type { UnitTemplate } from "./Templates.ts";
+import type { UnitTemplate, SpellTemplate } from "./Templates.ts";
 import { DamageCalc } from "./DamageCalc.ts";
 import type { Building } from "./Building.ts";
+import type { Buff } from "./SpellEngine.ts";
 
 export type AttackTarget = Unit | Building;
 
@@ -27,6 +28,13 @@ export class Unit {
   /** 正在挥向的目标（Unit 或 Building） */
   swingTarget: AttackTarget | null = null;
 
+  /** 法术 buff/debuff (heal 是即时不算 buff；bloodlust/faerieFire/frostNova-slow 都进这里) */
+  buffs: Buff[] = [];
+  /** 下一次可施法的绝对时间 (秒) */
+  nextSpellReadyAt = 0;
+  /** 正在施的法术 (castPoint 延迟生效)；null = 没在施法 */
+  pendingSpell: { sp: SpellTemplate; target: Unit; castAt: number } | null = null;
+
   alive = true;
   deadAt = 0;
 
@@ -40,7 +48,10 @@ export class Unit {
   }
 
   takeDamage(raw: number, atkType: import("./Enums.ts").DamageType): number {
-    const actual = DamageCalc.calc(raw, atkType, this.tpl.defense.armor, this.tpl.defense.armorType);
+    // 防御护甲 = 基础 + 当前 buff 的 armorFlat (faerieFire 等)
+    let armor = this.tpl.defense.armor;
+    for (const b of this.buffs) if (b.armorFlat) armor += b.armorFlat;
+    const actual = DamageCalc.calc(raw, atkType, armor, this.tpl.defense.armorType);
     this.hp -= actual;
     if (this.hp <= 0) {
       this.hp = 0;

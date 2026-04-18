@@ -2,13 +2,14 @@
 import { BattleSim } from "../src/BattleSim.ts";
 import { Vec2 } from "../src/Vec2.ts";
 import { Side } from "../src/Enums.ts";
-import { balance, building, units } from "../src/DataLoader.ts";
+import { balance, building, units, spells } from "../src/DataLoader.ts";
 
 const verbose = process.argv.includes("-v");
 
 function match(leftSetup: string[], rightSetup: string[], label: string): void {
   const sim = new BattleSim({ balance, verbose });
   sim.setUnitLookup(id => units.get(id));
+  sim.setSpellLookup(id => spells.get(id));
 
   const laneY = balance.laneLength / 2;
   // 主城

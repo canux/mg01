@@ -11,7 +11,7 @@ import { BattleSim } from "../engine/src/BattleSim.ts";
 import { Player } from "../engine/src/Player.ts";
 import { buildOrder } from "../engine/src/Strategy.ts";
 import { Side } from "../engine/src/Enums.ts";
-import { balance, units, buildings, races } from "../engine/src/DataLoader.ts";
+import { balance, units, buildings, races, spells } from "../engine/src/DataLoader.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const STATIC_DIR = resolve(__dirname, "static");
@@ -39,6 +39,7 @@ function newSim(leftRace: string, rightRace: string, leftMode: SideMode, rightMo
   sim.setUnitLookup(id => units.get(id));
   sim.setBuildingLookup(id => buildings.get(id));
   sim.setRaceLookup(id => races.find(r => r.id === id));
+  sim.setSpellLookup(id => spells.get(id));
 
   const lp = new Player(Side.Left,  leftRace,  `L-${leftRace}`,  balance.startGold, balance.incomeIntervalSec);
   const rp = new Player(Side.Right, rightRace, `R-${rightRace}`, balance.startGold, balance.incomeIntervalSec);
@@ -126,6 +127,9 @@ function snapshot(s: Session) {
     assetKey: u.tpl.assetKey,
     hp: Math.max(0, Math.round(u.hp)),
     hpMax: u.tpl.hp,
+    mana: u.tpl.manaMax ? Math.round(u.mana) : undefined,
+    manaMax: u.tpl.manaMax ?? undefined,
+    buffs: u.buffs.length ? u.buffs.map(b => b.id) : undefined,
   }));
   const ps = sim.projectiles.filter(p => p.alive).map(p => ({
     id: p.id,

@@ -2,11 +2,12 @@
 import { BattleSim } from "../src/BattleSim.ts";
 import { Vec2 } from "../src/Vec2.ts";
 import { Side } from "../src/Enums.ts";
-import { balance, unit, units } from "../src/DataLoader.ts";
+import { balance, unit, units, spells } from "../src/DataLoader.ts";
 
 function duel(leftId: string, rightId: string): void {
   const sim = new BattleSim({ balance, verbose: false });
   sim.setUnitLookup(id => units.get(id));
+  sim.setSpellLookup(id => spells.get(id));
   const L = sim.placeUnit(unit(leftId), Side.Left, new Vec2(0, -100));
   const R = sim.placeUnit(unit(rightId), Side.Right, new Vec2(0, 100));
   const start = Date.now();

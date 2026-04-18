@@ -5,7 +5,7 @@ import { BattleSim } from "../src/BattleSim.ts";
 import { Player } from "../src/Player.ts";
 import { buildOrder, mixedComposition } from "../src/Strategy.ts";
 import { Side } from "../src/Enums.ts";
-import { balance, units, buildings, races } from "../src/DataLoader.ts";
+import { balance, units, buildings, races, spells } from "../src/DataLoader.ts";
 
 const verbose = process.argv.includes("-v");
 
@@ -14,6 +14,7 @@ function simulate(label: string, leftRace: string, leftStrat: ReturnType<typeof 
   sim.setUnitLookup(id => units.get(id));
   sim.setBuildingLookup(id => buildings.get(id));
   sim.setRaceLookup(id => races.find(r => r.id === id));
+  sim.setSpellLookup(id => spells.get(id));
 
   const lp = new Player(Side.Left,  leftRace,  `L-${leftRace}`,  balance.startGold, balance.incomeIntervalSec);
   const rp = new Player(Side.Right, rightRace, `R-${rightRace}`, balance.startGold, balance.incomeIntervalSec);

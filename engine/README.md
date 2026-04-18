@@ -93,11 +93,11 @@ headless 引擎**只读 `attackPoint`/`attackBackswing`（秒）做逻辑**；�
 
 ## 资源替换
 
-首版用 War3 资源**仅供个人测试**。发布前：
+占位：`web/tools/gen_sprites.ts` 生成的本地 Q 版 SVG (学习用途，中性 `res://` 前缀)。发布前：
 
-1. 编辑 `data/war3_assets.json`，把 `model`/`icon` 指向自制 Q 版资源
-2. 或给每条加 `placeholderFree` 指向免费资源（Kenney.nl、Mixamo、Unity Asset Store Lean Poly）
-3. `units_*.json` / `buildings.json` **完全不用改**
+1. 编辑 `data/war3_assets.json`，把 `res://…` 指向自制 Q 版资源 (PNG sprite sheet / glb 模型)
+2. 编辑 `data/sprites.json`，调整 `path` + `frameSize` + `sheet.{stand,walk,attack,death}` 的 row/col/count
+3. `units_*.json` / `buildings.json` **完全不用改** (动画时长与 event 时间点已对齐 Unity AnimationEvent)
 
 ## Unity 移植对照
 

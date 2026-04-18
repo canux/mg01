@@ -14,8 +14,8 @@ War3《Castle Fight 城堡战争》的 Q 版 + 竖屏 9:16 手游移植。
 
 ## 美术 / 资源
 - **风格**：Q 版 2 头身，竖屏 1080×1920
-- **占位**：个人自测用 War3 MPQ 资源（`war3://` 前缀） / 免费 Kenney.nl / Mixamo
-- **换美术**：只改 `data/war3_assets.json` 即可，不动 units/buildings
+- **占位**：`web/tools/gen_sprites.ts` 自生成的 SVG（学习用途，非 War3 原始素材）；`res://` 中性前缀不绑定具体来源
+- **换美术**：只改 `data/war3_assets.json`（res:// URI）+ `data/sprites.json`（sprite sheet 布局），不动 units/buildings
 
 ## 动画关键帧约定
 每单位 animation 字段已对齐 Unity `AnimationEvent`：

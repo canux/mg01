@@ -54,8 +54,42 @@ web/
     └── main.js       # SSE 接入 + 渲染循环
 ```
 
-## 还没做
+## 美术资源
 
-- 玩家手动出牌（目前 AI 自动跑 `buildOrder`）
-- 技能动画 / 投射物可视化
-- 真实 2D 美术（当前是矩形 + 三角形 + emoji）
+目前使用**自生成 Q 版 SVG 占位**（学习用途，不含 War3 原始素材，中性 `res://` 前缀）。
+
+### 生成占位
+
+```bash
+node --experimental-strip-types web/tools/gen_sprites.ts
+# → web/static/assets/sprites/*.svg  (每 assetKey 一个)
+# → data/sprites.json                 (精灵元数据 + 帧布局)
+```
+
+### 替换成正式美术
+
+1. 准备 PNG sprite sheet（推荐 4 行 × N 帧，row: stand/walk/attack/death）
+2. 放到 `web/static/assets/sprites/<assetKey>.png`（或你自己的路径）
+3. 编辑 `data/sprites.json`，修改对应 assetKey 条目：
+   ```json
+   "human_footman": {
+     "path": "/assets/sprites/human_footman.png",
+     "frameSize": { "w": 96, "h": 96 },
+     "anchor": { "x": 0.5, "y": 0.85 },
+     "sheet": {
+       "stand":  { "row": 0, "col": 0, "count": 2 },
+       "walk":   { "row": 1, "col": 0, "count": 6 },
+       "attack": { "row": 2, "col": 0, "count": 5 },
+       "death":  { "row": 3, "col": 0, "count": 6 }
+     }
+   }
+   ```
+4. **动画时长与事件时间点**（attackPoint / DealDamage / BeginDecay）仍在 `data/units_*.json` 的 `animation` 字段，**不用动**
+5. `data/war3_assets.json` 的 `res://` URI 指向将来 Unity 侧的模型 / 图标路径，只在 Unity 移植时启用
+
+### 为什么叫 res://
+
+中性占位前缀，不绑定具体资源来源。你可以 mount 到：
+- 开发期：`/assets/sprites/*.svg`（当前）
+- Unity：`Resources.Load(path.replace("res://", ""))` 或 Addressables
+- 替换期：自己约定的 CDN / 本地目录

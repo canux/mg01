@@ -107,6 +107,7 @@ function snapshot(s: Session) {
     kind: b.tpl.kind,
     race: b.tpl.race,
     nameCn: b.tpl.nameCn,
+    assetKey: b.tpl.assetKey,
     hp: Math.max(0, Math.round(b.hp)),
     hpMax: b.tpl.hp,
     ready: b.isReady(sim.now),
@@ -119,6 +120,7 @@ function snapshot(s: Session) {
     race: u.tpl.race,
     role: u.tpl.role,
     nameCn: u.tpl.nameCn,
+    assetKey: u.tpl.assetKey,
     hp: Math.max(0, Math.round(u.hp)),
     hpMax: u.tpl.hp,
   }));
@@ -198,6 +200,17 @@ const server = createServer((req, res) => {
   if (url.pathname === "/races") {
     res.writeHead(200, { "content-type": "application/json" });
     res.end(JSON.stringify(races.map(r => ({ id: r.id, nameCn: r.nameCn, color: r.color }))));
+    return;
+  }
+
+  if (url.pathname === "/sprites") {
+    try {
+      const body = readFileSync(resolve(__dirname, "../data/sprites.json"));
+      res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+      res.end(body);
+    } catch {
+      res.writeHead(404).end("sprites.json not found; run: node --experimental-strip-types web/tools/gen_sprites.ts");
+    }
     return;
   }
 

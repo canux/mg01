@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <radialGradient id="g" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#79b0ec"/>
+      <stop offset="100%" stop-color="#3B7FD9"/>
+    </radialGradient>
+  </defs>
+  <!-- 影子 -->
+  <ellipse cx="32" cy="58" rx="14" ry="3" fill="rgba(0,0,0,0.35)"/>
+  <!-- 身体 (梯形) -->
+  <path d="M20 54 L22 40 L42 40 L44 54 Z" fill="#1b4c8f" stroke="#000" stroke-width="1"/>
+  <!-- 大头 (2 头身) -->
+  <circle cx="32" cy="26" r="16" fill="url(#g)" stroke="#000" stroke-width="1.2"/>
+  <!-- 角色图标 -->
+  <text x="32" y="31" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#fff">➤</text>
+  <!-- 调试标签 -->
+  <text x="32" y="63" text-anchor="middle" font-family="sans-serif" font-size="4" fill="rgba(255,255,255,0.55)">狮鹫骑士</text>
+</svg>

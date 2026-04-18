@@ -1,5 +1,6 @@
 // Canvas 渲染：把引擎世界坐标（x∈[-300..300], y∈[-1500..1500]）映射到竖屏画布
 // 世界原点在画布中心；+y 朝下 = Right 方向（Left 主城在上）
+// 精灵：从 /sprites 加载配置 + 预加载图片；失败 / 未加载 fall back 到形状绘制
 
 const RACE_COLOR = {
   human:    "#3B7FD9",
@@ -13,6 +14,15 @@ const ROLE_SIZE = {
   flying: 5.5, caster: 4.5, legendary: 9,
 };
 
+// 精灵绘制尺寸 (CSS px)。场景很小，值别设太大否则互相遮挡
+const UNIT_DRAW_PX = {
+  step: 22, range: 20, heavy: 28, siege: 30,
+  flying: 24, caster: 20, legendary: 38,
+};
+const BUILDING_DRAW_PX = {
+  castle: 54, tower: 28, barracks: 36, economy: 32, special: 34, legendary: 40,
+};
+
 export class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -22,8 +32,33 @@ export class Renderer {
     this.viewH = 0;
     this.scale = 1;
     this.world = { halfW: 300, halfH: 1500 };  // 默认
+    this.sprites = {};           // assetKey -> config
+    this.images  = {};           // assetKey -> HTMLImageElement
+    this.assetByEntity = {};     // `${kind}:${race}:${role/buildingKind}` -> assetKey (unused currently)
     this._resize();
     window.addEventListener("resize", () => this._resize());
+  }
+
+  async loadSprites() {
+    try {
+      const data = await fetch("/sprites").then(r => r.json());
+      this.sprites = data.sprites || {};
+      for (const [key, spec] of Object.entries(this.sprites)) {
+        const img = new Image();
+        img.decoding = "async";
+        img.src = spec.path;
+        this.images[key] = img;
+      }
+    } catch (err) {
+      console.warn("sprites.json load failed; using shape fallback", err);
+    }
+  }
+
+  _spriteFor(id) {
+    const s = this.sprites[id];
+    const img = this.images[id];
+    if (!s || !img || !img.complete || img.naturalWidth === 0) return null;
+    return { s, img };
   }
 
   setWorld(halfW, halfH) {
@@ -111,46 +146,48 @@ export class Renderer {
     const ctx = this.ctx;
     const x = this._wx(b.x);
     const y = this._wy(b.y);
-    const isLeft = b.side === 0;
-    const color = RACE_COLOR[b.race] || "#888";
+    const drawPx = BUILDING_DRAW_PX[b.kind] ?? 30;
 
-    let size = 12;
-    let stroke = "#fff";
-    if (b.kind === "castle")   { size = 22; stroke = "#fff"; }
-    else if (b.kind === "tower")    size = 10;
-    else if (b.kind === "barracks") size = 14;
-    else if (b.kind === "economy")  size = 13;
-
-    // 身体
-    ctx.fillStyle = color;
-    ctx.globalAlpha = b.ready ? 1 : 0.5;
-    ctx.fillRect(x - size, y - size, size * 2, size * 2);
-    ctx.globalAlpha = 1;
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = stroke;
-    ctx.strokeRect(x - size, y - size, size * 2, size * 2);
-
-    // 种类符号
-    ctx.fillStyle = "#fff";
-    ctx.font = `${Math.round(size * 1.1)}px sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const glyph = b.kind === "castle"   ? "♛"
-                : b.kind === "tower"    ? "▲"
-                : b.kind === "economy"  ? "$"
-                : b.kind === "barracks" ? "⚔"
-                : b.kind === "legendary" ? "★" : "■";
-    ctx.fillText(glyph, x, y + 1);
+    const hit = this._spriteFor(b.assetKey);
+    if (hit) {
+      const { s, img } = hit;
+      const ax = s.anchor?.x ?? 0.5;
+      const ay = s.anchor?.y ?? 0.9;
+      ctx.save();
+      ctx.globalAlpha = b.ready ? 1 : 0.5;
+      // 建筑按 side 不翻转（保持正立）
+      ctx.drawImage(img, x - drawPx * ax, y - drawPx * ay, drawPx, drawPx);
+      ctx.restore();
+    } else {
+      // fallback: 矩形 + glyph
+      const color = RACE_COLOR[b.race] || "#888";
+      const size = drawPx / 2;
+      ctx.fillStyle = color;
+      ctx.globalAlpha = b.ready ? 1 : 0.5;
+      ctx.fillRect(x - size, y - size, size * 2, size * 2);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x - size, y - size, size * 2, size * 2);
+      ctx.fillStyle = "#fff";
+      ctx.font = `${Math.round(size * 1.1)}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const glyph = b.kind === "castle" ? "♛" : b.kind === "tower" ? "▲"
+                  : b.kind === "economy" ? "$" : b.kind === "barracks" ? "⚔"
+                  : b.kind === "legendary" ? "★" : "■";
+      ctx.fillText(glyph, x, y + 1);
+    }
 
     // HP 条（非主城，主城由 overlay 画大条）
     if (b.kind !== "castle" && b.hp < b.hpMax) {
-      const w = size * 2;
+      const w = drawPx;
       const h = 2.5;
-      const yy = y - size - 5;
+      const yy = y - drawPx * 0.95;
       ctx.fillStyle = "rgba(0,0,0,0.5)";
-      ctx.fillRect(x - size, yy, w, h);
+      ctx.fillRect(x - w / 2, yy, w, h);
       ctx.fillStyle = hpColor(b.hp / b.hpMax);
-      ctx.fillRect(x - size, yy, w * (b.hp / b.hpMax), h);
+      ctx.fillRect(x - w / 2, yy, w * (b.hp / b.hpMax), h);
     }
   }
 
@@ -174,30 +211,49 @@ export class Renderer {
     const ctx = this.ctx;
     const x = this._wx(u.x);
     const y = this._wy(u.y);
+    const drawPx = UNIT_DRAW_PX[u.role] ?? 22;
     const r = ROLE_SIZE[u.role] || 5;
-    const color = RACE_COLOR[u.race] || "#aaa";
 
-    // 三角形：指向前进方向（Left 向下 +y，Right 向上 -y）
-    const dir = u.side === 0 ? 1 : -1;
-    ctx.fillStyle = color;
-    ctx.strokeStyle = "rgba(0,0,0,0.5)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x,           y + r * dir);
-    ctx.lineTo(x - r * 0.85, y - r * 0.7 * dir);
-    ctx.lineTo(x + r * 0.85, y - r * 0.7 * dir);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    const hit = this._spriteFor(u.assetKey);
+    if (hit) {
+      const { s, img } = hit;
+      const ax = s.anchor?.x ?? 0.5;
+      const ay = s.anchor?.y ?? 0.85;
+      ctx.save();
+      // Right 方向的单位水平镜像（朝 Left 看）——让双方朝中线对峙
+      if (u.side === 1) {
+        ctx.translate(x, y);
+        ctx.scale(-1, 1);
+        ctx.drawImage(img, -drawPx * ax, -drawPx * ay, drawPx, drawPx);
+      } else {
+        ctx.drawImage(img, x - drawPx * ax, y - drawPx * ay, drawPx, drawPx);
+      }
+      ctx.restore();
+    } else {
+      // fallback: 三角形朝前进方向
+      const dir = u.side === 0 ? 1 : -1;
+      const color = RACE_COLOR[u.race] || "#aaa";
+      ctx.fillStyle = color;
+      ctx.strokeStyle = "rgba(0,0,0,0.5)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x,           y + r * dir);
+      ctx.lineTo(x - r * 0.85, y - r * 0.7 * dir);
+      ctx.lineTo(x + r * 0.85, y - r * 0.7 * dir);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
 
     // 小 HP 条
     if (u.hp < u.hpMax) {
-      const w = r * 2;
+      const w = drawPx * 0.8;
       const h = 1.5;
+      const yy = y - drawPx * 0.9;
       ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.fillRect(x - r, y - r - 3, w, h);
+      ctx.fillRect(x - w / 2, yy, w, h);
       ctx.fillStyle = hpColor(u.hp / u.hpMax);
-      ctx.fillRect(x - r, y - r - 3, w * (u.hp / u.hpMax), h);
+      ctx.fillRect(x - w / 2, yy, w * (u.hp / u.hpMax), h);
     }
   }
 }

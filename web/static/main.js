@@ -38,6 +38,7 @@ function renderLoop() {
 }
 
 async function main() {
+  await renderer.loadSprites();
   await hud.populatePickers();
   hud.onNewGame(async (left, right) => {
     hud.clearLog();

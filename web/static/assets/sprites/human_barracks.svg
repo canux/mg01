@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <ellipse cx="32" cy="58" rx="18" ry="3" fill="rgba(0,0,0,0.4)"/>
+  <!-- 主体 -->
+  <rect x="14" y="28" width="36" height="28" fill="#3B7FD9" stroke="#000" stroke-width="1.2"/>
+  <!-- 门 -->
+  <rect x="28" y="46" width="8" height="10" fill="#1b4c8f"/>
+  <!-- 屋顶 -->
+  <polygon points="14,28 50,28 32,20" fill="#79b0ec" stroke="#000" stroke-width="1.2"/>
+  <!-- 旗帜顶 (castle/legendary) -->
+  
+  <!-- 类型图标 -->
+  <text x="32" y="46" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#fff">⚒</text>
+  <!-- 调试标签 -->
+  <text x="32" y="63" text-anchor="middle" font-family="sans-serif" font-size="4" fill="rgba(255,255,255,0.6)">步兵营</text>
+</svg>

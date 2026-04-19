@@ -16,9 +16,9 @@ TS `engine/src/*` 是权威实现；Unity 侧逐文件对应翻译，便于双�
 | Unit / Building / Projectile | `engine/src/{Unit,Building,Projectile}.ts` | `Assets/Mg01/Sim/*.cs` | ✅ 完整移植 (MonoBehaviour) |
 | Buff / UnitMods | `engine/src/SpellEngine.ts` | `Assets/Mg01/Sim/Buff.cs` | ✅ |
 | Player | `engine/src/Player.ts` | `Assets/Mg01/Sim/Player.cs` | ✅ |
-| BattleSim 主循环 | `engine/src/BattleSim.ts` | `Assets/Mg01/Sim/BattleSim.cs` | ⚠️ 骨架 (各 Tick* 方法 TODO) |
-| Strategy / SpellEngine.autoCast | TS 同名 | (待移植) | ⏳ |
-| 投射物 / 法术效果细节 | TS 同名 | (待移植) | ⏳ |
+| BattleSim 主循环 | `engine/src/BattleSim.ts` | `Assets/Mg01/Sim/BattleSim.cs` | ✅ 完整 Tick*（阶段 / 经济 / 出兵 / 自卫 / 投射物 / 法术 / AI） |
+| Strategy | `engine/src/Strategy.ts` | `Assets/Mg01/Sim/Strategy.cs` | ✅ BuildOrder + MixedComposition + DoNothing |
+| SpellEngine | `engine/src/SpellEngine.ts` | `Assets/Mg01/Sim/SpellEngine.cs` | ✅ 4 MVP 法术 (heal / bloodlust / faerieFire / frostNova) |
 
 ## 用法
 

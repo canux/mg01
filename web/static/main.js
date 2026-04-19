@@ -9,6 +9,31 @@ const hud = new HUD();
 let latestState = null;
 let sse = null;
 
+// 持久 clientId (localStorage) — 用于 refresh/reconnect 保持同一 side
+function getClientId() {
+  let id = localStorage.getItem("mg01.clientId");
+  if (!id) {
+    id = "c_" + Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem("mg01.clientId", id);
+  }
+  return id;
+}
+
+const mySession = { clientId: getClientId(), side: null, token: null };
+
+async function joinRoom() {
+  try {
+    const r = await fetch(`/join?clientId=${encodeURIComponent(mySession.clientId)}`, { method: "POST" })
+      .then(r => r.json());
+    if (r.ok) {
+      mySession.side = r.side;
+      mySession.token = r.token;
+      hud.setMySession(mySession);
+      console.log("[join]", mySession);
+    }
+  } catch (err) { console.warn("join failed", err); }
+}
+
 function connect() {
   if (sse) sse.close();
   sse = new EventSource("/stream");
@@ -46,6 +71,9 @@ function setupTap() {
     const slot = renderer.hitSlot(cx, cy, latestState);
     if (!slot) return;
     ev.preventDefault();
+    // 只能操作自己 side 且该 side 为 player 模式
+    const modeKey = slot.side === 0 ? "left" : "right";
+    if (mySession.side !== slot.side || latestState.modes?.[modeKey] !== "player") return;
     const player = latestState.players.find(p => p.side === slot.side);
     if (!player) return;
     hud.openBuildSheet(slot, player.race, player.gold, async (buildingId) => {
@@ -68,9 +96,11 @@ async function main() {
     latestState = null;
     const qs = `left=${left}&right=${right}&leftMode=${leftMode}&rightMode=${rightMode}`;
     await fetch(`/new?${qs}`, { method: "POST" });
+    await joinRoom();
     connect();
   });
   setupTap();
+  await joinRoom();
   connect();
   requestAnimationFrame(renderLoop);
 }

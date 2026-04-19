@@ -40,10 +40,12 @@ export class HUD {
       winGoldL: document.getElementById("win-gold-l"),
       winGoldR: document.getElementById("win-gold-r"),
       btnRematch: document.getElementById("btn-rematch"),
+      myside:   document.getElementById("myside"),
     };
     this._lastEventT = -1;
     this._lastGold = { 0: null, 1: null };
     this._buildingsByRace = new Map();   // race -> array (cached)
+    this._my = { clientId: null, side: null, token: null };
     this.el.sheetClose.addEventListener("click", () => this.closeBuildSheet());
     this.el.speedbar.addEventListener("click", async (e) => {
       const btn = e.target.closest("button[data-rate]");
@@ -76,13 +78,29 @@ export class HUD {
     this._lastGold[player.side] = player.gold;
   }
 
+  setMySession(my) {
+    this._my = my;
+    for (const cls of ["me-left", "me-right"]) document.body.classList.remove(cls);
+    if (my.side === 0) document.body.classList.add("me-left");
+    if (my.side === 1) document.body.classList.add("me-right");
+    this.el.myside.classList.remove("left", "right", "spec");
+    if (my.side === 0)      { this.el.myside.textContent = "你是 L"; this.el.myside.classList.add("left"); }
+    else if (my.side === 1) { this.el.myside.textContent = "你是 R"; this.el.myside.classList.add("right"); }
+    else                    { this.el.myside.textContent = "观战";   this.el.myside.classList.add("spec"); }
+  }
+
+  /** 当前 player 是否能操作此 side（自己 side + mode=player） */
+  _canControl(side, mode) {
+    return mode === "player" && this._my.side === side;
+  }
+
   async _hireHero(side) {
     const r = await fetch(`/hero?side=${side}`, { method: "POST" })
       .then(r => r.json()).catch(err => ({ ok: false, reason: String(err) }));
     if (!r.ok) console.warn("hero hire failed:", r.reason);
   }
 
-  _refreshHeroBtn(btn, hero, gold, mode) {
+  _refreshHeroBtn(btn, hero, gold, mode, side) {
     btn.classList.remove("ready", "cooldown");
     if (!hero) {
       btn.disabled = true;
@@ -90,6 +108,7 @@ export class HUD {
       btn.querySelector(".hero-sub").textContent  = "无英雄";
       return;
     }
+    const canCtl = this._canControl(side, mode);
     btn.querySelector(".hero-name").textContent = hero.nameCn;
     if (hero.alive) {
       btn.disabled = true;
@@ -100,8 +119,8 @@ export class HUD {
       btn.querySelector(".hero-sub").textContent = `复活 ${hero.reviveIn.toFixed(0)}s`;
     } else {
       const afford = gold >= hero.nextCost;
-      btn.disabled = !afford || mode !== "player";
-      btn.classList.toggle("ready", afford && mode === "player");
+      btn.disabled = !afford || !canCtl;
+      btn.classList.toggle("ready", afford && canCtl);
       btn.querySelector(".hero-sub").textContent = `召唤 ${hero.nextCost}g`;
     }
   }
@@ -187,8 +206,8 @@ export class HUD {
       this.el.incomeR.textContent = `+${rp.income}/10s`;
       this.el.raceR.textContent = RACE_NAME_CN[rp.race] ?? rp.race;
     }
-    this._refreshHeroBtn(this.el.heroL, lp?.hero, lp?.gold ?? 0, state.modes?.left ?? "ai");
-    this._refreshHeroBtn(this.el.heroR, rp?.hero, rp?.gold ?? 0, state.modes?.right ?? "ai");
+    this._refreshHeroBtn(this.el.heroL, lp?.hero, lp?.gold ?? 0, state.modes?.left  ?? "ai", 0);
+    this._refreshHeroBtn(this.el.heroR, rp?.hero, rp?.gold ?? 0, state.modes?.right ?? "ai", 1);
 
     this.el.timer.textContent    = state.t.toFixed(1) + "s";
     this.el.timerMax.textContent = state.maxT + "s";

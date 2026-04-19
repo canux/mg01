@@ -32,6 +32,8 @@ const HERO_BY_RACE: Record<string, { id: string; nameCn: string; cost: number }>
 
 type SideMode = "ai" | "player";
 
+interface SlotHolder { clientId: string; token: string; }
+
 interface Session {
   sim: BattleSim;
   modes: { left: SideMode; right: SideMode };
@@ -40,6 +42,11 @@ interface Session {
   timer: NodeJS.Timeout | null;
   listeners: Set<ServerResponse>;
   speed: number;    // 0 = paused; otherwise 0.5 / 1 / 2 / 4
+  slots: { left: SlotHolder | null; right: SlotHolder | null };
+}
+
+function randomToken(): string {
+  return Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 10);
 }
 
 let current: Session | null = null;
@@ -58,7 +65,21 @@ function newSim(leftRace: string, rightRace: string, leftMode: SideMode, rightMo
   sim.addPlayer(lp);
   sim.addPlayer(rp);
 
-  return { sim, modes: { left: leftMode, right: rightMode }, recentEvents: [], phase: 0, timer: null, listeners: new Set(), speed: 1 };
+  return { sim, modes: { left: leftMode, right: rightMode }, recentEvents: [], phase: 0, timer: null, listeners: new Set(), speed: 1, slots: { left: null, right: null } };
+}
+
+/** 返回 client 在当前 session 的 side（已占 → 返回该 side；否则尝试抢一个 mode=player 的空位；都满 → null 观众） */
+function claimSide(s: Session, clientId: string): { side: 0 | 1 | null; token: string | null } {
+  if (s.slots.left?.clientId  === clientId) return { side: 0, token: s.slots.left.token };
+  if (s.slots.right?.clientId === clientId) return { side: 1, token: s.slots.right.token };
+  for (const [key, sideNum] of [["left", 0], ["right", 1]] as const) {
+    if (s.modes[key] === "player" && !s.slots[key]) {
+      const token = randomToken();
+      s.slots[key] = { clientId, token };
+      return { side: sideNum, token };
+    }
+  }
+  return { side: null, token: null };
 }
 
 function stopLoop(s: Session) {
@@ -198,6 +219,10 @@ function snapshot(s: Session) {
     laneWidth: balance.laneWidth,
     modes: s.modes,
     speed: s.speed,
+    slots: {
+      left:  { claimed: !!s.slots.left,  mode: s.modes.left  },
+      right: { claimed: !!s.slots.right, mode: s.modes.right },
+    },
     players,
     buildings: bs,
     units: us,
@@ -255,6 +280,23 @@ const server = createServer((req, res) => {
     return;
   }
 
+  if (url.pathname === "/join" && req.method === "POST") {
+    if (!current) current = newSim("human", "orc", "ai", "ai");
+    const clientId = url.searchParams.get("clientId");
+    if (!clientId) { res.writeHead(400).end(JSON.stringify({ ok: false, reason: "clientId required" })); return; }
+    const { side, token } = claimSide(current, clientId);
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({
+      ok: true,
+      side,                  // 0 / 1 / null (观众)
+      token,                 // 后续 /place /hero /speed 需带 header x-token
+      modes: current.modes,
+      leftRace:  current.sim.players[0]?.race ?? "human",
+      rightRace: current.sim.players[1]?.race ?? "orc",
+    }));
+    return;
+  }
+
   if (url.pathname === "/new" && req.method === "POST") {
     const left = url.searchParams.get("left") ?? "human";
     const right = url.searchParams.get("right") ?? "orc";
@@ -262,7 +304,11 @@ const server = createServer((req, res) => {
     const rightMode = (url.searchParams.get("rightMode") === "player" ? "player" : "ai") as SideMode;
     if (current) stopLoop(current);
     for (const l of current?.listeners ?? []) l.end();
+    const prevSlots = current?.slots ?? { left: null, right: null };
     current = newSim(left, right, leftMode, rightMode);
+    // 保留原 slot 占用（同 clientId 新局沿用角色）；但若 mode 变成 ai 则清空
+    if (leftMode  === "player" && prevSlots.left)  current.slots.left  = prevSlots.left;
+    if (rightMode === "player" && prevSlots.right) current.slots.right = prevSlots.right;
     res.writeHead(200, { "content-type": "application/json" });
     res.end(JSON.stringify({ ok: true, left, right, leftMode, rightMode }));
     return;

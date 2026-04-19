@@ -18,8 +18,9 @@ namespace Mg01.Sim
         public float armor;        // 可被阶段机制覆盖 (主城 Siege Phase)
         public bool alive = true;
 
-        public float nextSpawnAt;  // 下次出兵绝对秒
-        public float readyAt;      // 建造完成时间
+        public float nextSpawnAt;          // 下次出兵绝对秒
+        public float readyAt;              // 建造完成时间
+        public float nextAttackReadyAt;    // 下次自卫攻击就绪时间 (castle/tower)
 
         public void Init(BuildingTemplate t, Side s, Vector2 pos, float createdAt)
         {

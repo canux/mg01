@@ -55,8 +55,20 @@ html, body {
 }
 .side-left  .race-badge { background: var(--left); }
 .side-right .race-badge { background: var(--right); }
-.gold { font-weight: 700; color: var(--gold); }
+.gold { font-weight: 700; color: var(--gold); position: relative; }
 .gold i { font-style: normal; margin-right: 3px; }
+.gold-fx {
+  position: absolute; left: 50%; top: -14px;
+  font-size: 10px; font-weight: 700; pointer-events: none;
+  animation: goldFx 0.9s ease-out forwards;
+  transform: translateX(-50%);
+}
+.gold-fx.plus  { color: #5cd67a; }
+.gold-fx.minus { color: #ff6b6b; }
+@keyframes goldFx {
+  0%   { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -14px); }
+}
 .income { color: var(--mute); font-size: 11px; }
 #hud-top .center { text-align: center; font-variant-numeric: tabular-nums; }
 .timer { font-size: 14px; font-weight: 700; }
@@ -115,18 +127,42 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
-  font-weight: 900;
-  letter-spacing: 4px;
-  background: rgba(0,0,0,0.55);
-  backdrop-filter: blur(2px);
-  pointer-events: none;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(3px);
+  z-index: 40;
+  animation: bannerIn 0.35s ease-out;
 }
 #banner.hidden { display: none; }
-#banner.left  { color: var(--left); }
-#banner.right { color: var(--right); }
-#banner.draw  { color: var(--mute); }
+@keyframes bannerIn { from { opacity: 0; } to { opacity: 1; } }
+
+.win-card {
+  min-width: 260px; max-width: 85%;
+  background: linear-gradient(180deg, var(--bg-2), var(--bg));
+  border: 1px solid var(--border); border-radius: 14px;
+  padding: 20px 22px; text-align: center;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+.win-title {
+  font-size: 26px; font-weight: 900; letter-spacing: 4px; margin-bottom: 14px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+}
+#banner.left  .win-title { color: var(--left); }
+#banner.right .win-title { color: var(--right); }
+#banner.draw  .win-title { color: var(--mute); letter-spacing: 6px; }
+.win-stats {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px;
+  align-items: center; margin-bottom: 16px;
+}
+.win-col { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--mute); }
+.win-col.left  { align-items: flex-end; }
+.win-col.right { align-items: flex-start; }
+.win-race { font-size: 14px; font-weight: 700; color: var(--fg); }
+.win-col.left  .win-race { color: var(--left); }
+.win-col.right .win-race { color: var(--right); }
+.win-col b { color: var(--fg); font-size: 16px; }
+.win-gold b { color: var(--gold); }
+.win-vs { font-size: 11px; color: var(--mute); font-weight: 700; letter-spacing: 2px; }
+#btn-rematch { min-width: 140px; }
 
 /* ---- 底部控制 ---- */
 #hud-bottom {
@@ -191,8 +227,27 @@ button:active { transform: scale(0.97); }
 #log li.spawn { color: #6fc4ff; }
 #log li.death { color: #ff7b7b; }
 #log li.build { color: #f7c948; }
+#log li.hero  { color: #b88cff; font-weight: 700; }
+#log li.spell { color: #8cd9ff; }
 #log li.phase { color: #ff8a3d; font-weight: 700; }
 #log li.end   { color: #fff; font-weight: 700; }
+
+#log-tabs {
+  display: flex; gap: 4px; padding: 2px 0 4px;
+  border-bottom: 1px solid var(--border); margin-bottom: 4px;
+  position: sticky; top: -6px; background: var(--panel); z-index: 1;
+}
+#log-tabs button {
+  background: transparent; border: 1px solid transparent;
+  color: var(--mute); font-size: 10px; font-weight: 600;
+  padding: 2px 7px; border-radius: 4px; cursor: pointer;
+}
+#log-tabs button.active { background: var(--bg-2); color: var(--fg); border-color: var(--border); }
+#log-panel[data-filter="attack"] #log li:not(.attack)  { display: none; }
+#log-panel[data-filter="spell"]  #log li:not(.spell)   { display: none; }
+#log-panel[data-filter="death"]  #log li:not(.death):not(.building_down):not(.castle_down) { display: none; }
+#log-panel[data-filter="build"]  #log li:not(.build)   { display: none; }
+#log-panel[data-filter="hero"]   #log li:not(.hero)    { display: none; }
 
 /* ---- 模式选择小标签 ---- */
 select.mode {

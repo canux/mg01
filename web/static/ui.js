@@ -30,8 +30,19 @@ export class HUD {
       speedbar: document.getElementById("speedbar"),
       heroL:    document.getElementById("hero-left"),
       heroR:    document.getElementById("hero-right"),
+      logPanel: document.getElementById("log-panel"),
+      logTabs:  document.getElementById("log-tabs"),
+      winTitle: document.getElementById("win-title"),
+      winRaceL: document.getElementById("win-race-l"),
+      winRaceR: document.getElementById("win-race-r"),
+      winSpawnL:document.getElementById("win-spawn-l"),
+      winSpawnR:document.getElementById("win-spawn-r"),
+      winGoldL: document.getElementById("win-gold-l"),
+      winGoldR: document.getElementById("win-gold-r"),
+      btnRematch: document.getElementById("btn-rematch"),
     };
     this._lastEventT = -1;
+    this._lastGold = { 0: null, 1: null };
     this._buildingsByRace = new Map();   // race -> array (cached)
     this.el.sheetClose.addEventListener("click", () => this.closeBuildSheet());
     this.el.speedbar.addEventListener("click", async (e) => {
@@ -42,6 +53,27 @@ export class HUD {
     });
     this.el.heroL.addEventListener("click", () => this._hireHero(0));
     this.el.heroR.addEventListener("click", () => this._hireHero(1));
+    this.el.logTabs.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-kind]");
+      if (!btn) return;
+      for (const b of this.el.logTabs.querySelectorAll("button")) b.classList.remove("active");
+      btn.classList.add("active");
+      this.el.logPanel.dataset.filter = btn.dataset.kind;
+    });
+  }
+
+  _updateGold(player, goldEl) {
+    const prev = this._lastGold[player.side];
+    goldEl.textContent = player.gold;
+    if (prev !== null && player.gold !== prev) {
+      const diff = player.gold - prev;
+      const fx = document.createElement("span");
+      fx.className = "gold-fx " + (diff > 0 ? "plus" : "minus");
+      fx.textContent = (diff > 0 ? "+" : "") + diff;
+      goldEl.parentElement.appendChild(fx);
+      setTimeout(() => fx.remove(), 900);
+    }
+    this._lastGold[player.side] = player.gold;
   }
 
   async _hireHero(side) {
@@ -137,21 +169,21 @@ export class HUD {
   }
 
   onNewGame(cb) {
-    this.el.btnNew.addEventListener("click", () => {
-      cb(this.el.pickL.value, this.el.pickR.value, this.el.modeL.value, this.el.modeR.value);
-    });
+    const fire = () => cb(this.el.pickL.value, this.el.pickR.value, this.el.modeL.value, this.el.modeR.value);
+    this.el.btnNew.addEventListener("click", fire);
+    this.el.btnRematch.addEventListener("click", fire);
   }
 
   update(state) {
     const lp = state.players.find(p => p.side === 0);
     const rp = state.players.find(p => p.side === 1);
     if (lp) {
-      this.el.goldL.textContent = lp.gold;
+      this._updateGold(lp, this.el.goldL);
       this.el.incomeL.textContent = `+${lp.income}/10s`;
       this.el.raceL.textContent = RACE_NAME_CN[lp.race] ?? lp.race;
     }
     if (rp) {
-      this.el.goldR.textContent = rp.gold;
+      this._updateGold(rp, this.el.goldR);
       this.el.incomeR.textContent = `+${rp.income}/10s`;
       this.el.raceR.textContent = RACE_NAME_CN[rp.race] ?? rp.race;
     }
@@ -174,18 +206,21 @@ export class HUD {
     this.el.phase.textContent = `Phase ${phase} · ${phaseName}`;
     this.el.phase.className = `phase p${phase}`;
 
-    // Banner
+    // Banner (胜负卡片)
     if (state.ended) {
       this.el.banner.classList.remove("hidden", "left", "right", "draw");
-      if (state.winner === 0) {
-        this.el.banner.textContent = "LEFT WIN";
-        this.el.banner.classList.add("left");
-      } else if (state.winner === 1) {
-        this.el.banner.textContent = "RIGHT WIN";
-        this.el.banner.classList.add("right");
-      } else {
-        this.el.banner.textContent = "DRAW";
-        this.el.banner.classList.add("draw");
+      if (state.winner === 0)       { this.el.winTitle.textContent = "LEFT WIN";  this.el.banner.classList.add("left"); }
+      else if (state.winner === 1)  { this.el.winTitle.textContent = "RIGHT WIN"; this.el.banner.classList.add("right"); }
+      else                          { this.el.winTitle.textContent = "DRAW";      this.el.banner.classList.add("draw"); }
+      if (lp) {
+        this.el.winRaceL.textContent  = RACE_NAME_CN[lp.race] ?? lp.race;
+        this.el.winSpawnL.textContent = lp.unitsSpawned;
+        this.el.winGoldL.textContent  = lp.gold;
+      }
+      if (rp) {
+        this.el.winRaceR.textContent  = RACE_NAME_CN[rp.race] ?? rp.race;
+        this.el.winSpawnR.textContent = rp.unitsSpawned;
+        this.el.winGoldR.textContent  = rp.gold;
       }
     } else {
       this.el.banner.classList.add("hidden");
@@ -208,5 +243,6 @@ export class HUD {
   clearLog() {
     this.el.log.innerHTML = "";
     this._lastEventT = -1;
+    this._lastGold = { 0: null, 1: null };
   }
 }

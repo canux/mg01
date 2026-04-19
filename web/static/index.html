@@ -45,7 +45,25 @@
 
     <div id="stage-wrap">
       <canvas id="stage"></canvas>
-      <div id="banner" class="hidden"></div>
+      <div id="banner" class="hidden">
+        <div class="win-card">
+          <div class="win-title" id="win-title">—</div>
+          <div class="win-stats">
+            <div class="win-col left">
+              <div class="win-race" id="win-race-l">—</div>
+              <div class="win-spawn"><b id="win-spawn-l">0</b> 造兵</div>
+              <div class="win-gold"><b id="win-gold-l">0</b>g</div>
+            </div>
+            <div class="win-vs">VS</div>
+            <div class="win-col right">
+              <div class="win-race" id="win-race-r">—</div>
+              <div class="win-spawn"><b id="win-spawn-r">0</b> 造兵</div>
+              <div class="win-gold"><b id="win-gold-r">0</b>g</div>
+            </div>
+          </div>
+          <button id="btn-rematch" class="primary">再来一局</button>
+        </div>
+      </div>
     </div>
 
     <footer id="hud-bottom">
@@ -68,7 +86,15 @@
       </div>
     </footer>
 
-    <div id="log-panel">
+    <div id="log-panel" data-filter="all">
+      <div id="log-tabs">
+        <button class="active" data-kind="all">全部</button>
+        <button data-kind="attack">攻击</button>
+        <button data-kind="spell">法术</button>
+        <button data-kind="death">死亡</button>
+        <button data-kind="build">建造</button>
+        <button data-kind="hero">英雄</button>
+      </div>
       <ul id="log"></ul>
     </div>
 

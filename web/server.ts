@@ -101,10 +101,12 @@ function startLoop(s: Session) {
   const prevEventCount = { n: s.sim.events.length };
   const interval = Math.max(10, Math.round(BASE_TICK_INTERVAL_MS / s.speed));
   s.timer = setInterval(() => {
-    if (s.sim.ended || s.sim.now >= balance.rules.maxBattleSec) {
-      stopLoop(s);
-      broadcast(s);
-      return;
+    if (s.sim.ended) { stopLoop(s); broadcast(s); return; }
+    if (s.sim.now >= balance.rules.maxBattleSec) {
+      s.sim.ended = true;
+      s.sim.winner = null;
+      s.sim.log({ t: s.sim.now, kind: "end", msg: `timeout at ${s.sim.now.toFixed(1)}s (draw)` });
+      stopLoop(s); broadcast(s); return;
     }
     s.sim.tick();
 

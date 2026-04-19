@@ -16,8 +16,8 @@ import { balance, units, buildings, races, spells } from "../engine/src/DataLoad
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const STATIC_DIR = resolve(__dirname, "static");
 const PORT = Number(process.env.PORT ?? 8080);
-const TICK_INTERVAL_MS = 100;         // 与 tickRate=10Hz 对齐
-const SNAPSHOT_INTERVAL_MS = 100;     // 每 tick 推一帧
+const BASE_TICK_INTERVAL_MS = 100;    // 1x = 10Hz
+const SPEED_CHOICES = [0, 0.5, 1, 2, 4] as const;  // 0 = 暂停
 
 // ---- 战斗 ----
 
@@ -30,6 +30,7 @@ interface Session {
   phase: number;
   timer: NodeJS.Timeout | null;
   listeners: Set<ServerResponse>;
+  speed: number;    // 0 = paused; otherwise 0.5 / 1 / 2 / 4
 }
 
 let current: Session | null = null;
@@ -48,7 +49,20 @@ function newSim(leftRace: string, rightRace: string, leftMode: SideMode, rightMo
   sim.addPlayer(lp);
   sim.addPlayer(rp);
 
-  return { sim, modes: { left: leftMode, right: rightMode }, recentEvents: [], phase: 0, timer: null, listeners: new Set() };
+  return { sim, modes: { left: leftMode, right: rightMode }, recentEvents: [], phase: 0, timer: null, listeners: new Set(), speed: 1 };
+}
+
+function stopLoop(s: Session) {
+  if (s.timer) { clearInterval(s.timer); s.timer = null; }
+}
+
+function applySpeed(s: Session, speed: number) {
+  if (!SPEED_CHOICES.includes(speed as typeof SPEED_CHOICES[number])) return false;
+  s.speed = speed;
+  stopLoop(s);
+  if (speed > 0) startLoop(s);
+  else broadcast(s);
+  return true;
 }
 
 const STRATEGIES: Record<string, ReturnType<typeof buildOrder>> = {
@@ -74,10 +88,12 @@ const STRATEGIES: Record<string, ReturnType<typeof buildOrder>> = {
 
 function startLoop(s: Session) {
   if (s.timer) return;
+  if (s.speed <= 0) return;
   const prevEventCount = { n: s.sim.events.length };
+  const interval = Math.max(10, Math.round(BASE_TICK_INTERVAL_MS / s.speed));
   s.timer = setInterval(() => {
     if (s.sim.ended || s.sim.now >= balance.rules.maxBattleSec) {
-      if (s.timer) { clearInterval(s.timer); s.timer = null; }
+      stopLoop(s);
       broadcast(s);
       return;
     }
@@ -90,7 +106,7 @@ function startLoop(s: Session) {
       if (s.recentEvents.length > 30) s.recentEvents.shift();
     }
     broadcast(s);
-  }, TICK_INTERVAL_MS);
+  }, interval);
 }
 
 function snapshot(s: Session) {
@@ -157,6 +173,7 @@ function snapshot(s: Session) {
     laneLength: balance.laneLength,
     laneWidth: balance.laneWidth,
     modes: s.modes,
+    speed: s.speed,
     players,
     buildings: bs,
     units: us,
@@ -219,11 +236,20 @@ const server = createServer((req, res) => {
     const right = url.searchParams.get("right") ?? "orc";
     const leftMode  = (url.searchParams.get("leftMode")  === "player" ? "player" : "ai") as SideMode;
     const rightMode = (url.searchParams.get("rightMode") === "player" ? "player" : "ai") as SideMode;
-    if (current?.timer) clearInterval(current.timer);
+    if (current) stopLoop(current);
     for (const l of current?.listeners ?? []) l.end();
     current = newSim(left, right, leftMode, rightMode);
     res.writeHead(200, { "content-type": "application/json" });
     res.end(JSON.stringify({ ok: true, left, right, leftMode, rightMode }));
+    return;
+  }
+
+  if (url.pathname === "/speed" && req.method === "POST") {
+    if (!current) { res.writeHead(400).end(JSON.stringify({ ok: false, reason: "no session" })); return; }
+    const rate = Number(url.searchParams.get("rate") ?? "1");
+    const ok = applySpeed(current, rate);
+    res.writeHead(ok ? 200 : 400, { "content-type": "application/json" });
+    res.end(JSON.stringify({ ok, speed: current.speed }));
     return;
   }
 

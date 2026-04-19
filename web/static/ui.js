@@ -27,10 +27,17 @@ export class HUD {
       sheetSlot:document.getElementById("sheet-slot"),
       sheetList:document.getElementById("sheet-list"),
       sheetClose:document.getElementById("sheet-close"),
+      speedbar: document.getElementById("speedbar"),
     };
     this._lastEventT = -1;
     this._buildingsByRace = new Map();   // race -> array (cached)
     this.el.sheetClose.addEventListener("click", () => this.closeBuildSheet());
+    this.el.speedbar.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button[data-rate]");
+      if (!btn) return;
+      const rate = btn.getAttribute("data-rate");
+      await fetch(`/speed?rate=${rate}`, { method: "POST" }).catch(() => {});
+    });
   }
 
   modes() {
@@ -117,6 +124,13 @@ export class HUD {
 
     this.el.timer.textContent    = state.t.toFixed(1) + "s";
     this.el.timerMax.textContent = state.maxT + "s";
+
+    // speed bar highlight
+    const curSpeed = state.speed ?? 1;
+    for (const btn of this.el.speedbar.querySelectorAll("button[data-rate]")) {
+      const r = Number(btn.getAttribute("data-rate"));
+      btn.classList.toggle("active", r === curSpeed);
+    }
 
     // 阶段推断（和引擎一致：120/180/240 切换）
     const phase = state.t < 120 ? 0 : state.t < 180 ? 1 : state.t < 240 ? 2 : 3;

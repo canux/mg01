@@ -41,20 +41,30 @@ export class HUD {
       winGoldR: document.getElementById("win-gold-r"),
       btnRematch: document.getElementById("btn-rematch"),
       myside:   document.getElementById("myside"),
+      readyOverlay: document.getElementById("ready-overlay"),
+      readyL:   document.getElementById("ready-l"),
+      readyR:   document.getElementById("ready-r"),
+      btnReady: document.getElementById("btn-ready"),
     };
     this._lastEventT = -1;
     this._lastGold = { 0: null, 1: null };
     this._buildingsByRace = new Map();   // race -> array (cached)
     this._my = { clientId: null, side: null, token: null };
+    this._authHeaders = () => ({});
     this.el.sheetClose.addEventListener("click", () => this.closeBuildSheet());
     this.el.speedbar.addEventListener("click", async (e) => {
       const btn = e.target.closest("button[data-rate]");
       if (!btn) return;
       const rate = btn.getAttribute("data-rate");
-      await fetch(`/speed?rate=${rate}`, { method: "POST" }).catch(() => {});
+      await fetch(`/speed?rate=${rate}`, { method: "POST", headers: this._authHeaders() }).catch(() => {});
     });
     this.el.heroL.addEventListener("click", () => this._hireHero(0));
     this.el.heroR.addEventListener("click", () => this._hireHero(1));
+    this._myReady = false;
+    this.el.btnReady.addEventListener("click", () => {
+      this._myReady = !this._myReady;
+      this._toggleReady(this._myReady);
+    });
     this.el.logTabs.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-kind]");
       if (!btn) return;
@@ -94,10 +104,46 @@ export class HUD {
     return mode === "player" && this._my.side === side;
   }
 
+  setAuth(headersFn) { this._authHeaders = headersFn; }
+
   async _hireHero(side) {
-    const r = await fetch(`/hero?side=${side}`, { method: "POST" })
+    const r = await fetch(`/hero?side=${side}`, { method: "POST", headers: this._authHeaders() })
       .then(r => r.json()).catch(err => ({ ok: false, reason: String(err) }));
     if (!r.ok) console.warn("hero hire failed:", r.reason);
+  }
+
+  _refreshReady(state) {
+    const rd = state.ready ?? { left: true, right: true, all: true };
+    // 游戏已开或已结 → 隐藏
+    if (rd.all || state.t > 0 || state.ended) {
+      this.el.readyOverlay.classList.add("hidden");
+      return;
+    }
+    this.el.readyOverlay.classList.remove("hidden");
+    const label = (side, mode, ready) =>
+      mode === "ai" ? `${side} · AI` : (ready ? `${side} · 已准备` : `${side} · 未准备`);
+    this.el.readyL.textContent = label("L", state.modes?.left,  rd.left);
+    this.el.readyR.textContent = label("R", state.modes?.right, rd.right);
+    this.el.readyL.classList.toggle("go", rd.left  || state.modes?.left  === "ai");
+    this.el.readyR.classList.toggle("go", rd.right || state.modes?.right === "ai");
+    // 按钮仅给 player side 的玩家看
+    const mySide = this._my.side;
+    const myMode = mySide === 0 ? state.modes?.left : mySide === 1 ? state.modes?.right : null;
+    const myRdy  = mySide === 0 ? rd.left : mySide === 1 ? rd.right : false;
+    this._myReady = !!myRdy;
+    if (mySide === null || myMode !== "player") {
+      this.el.btnReady.textContent = "观战中...";
+      this.el.btnReady.disabled = true;
+    } else {
+      this.el.btnReady.disabled = false;
+      this.el.btnReady.textContent = myRdy ? "取消准备" : "准备";
+    }
+  }
+
+  async _toggleReady(wantReady) {
+    const r = await fetch(`/ready?ready=${wantReady ? "true" : "false"}`, { method: "POST", headers: this._authHeaders() })
+      .then(r => r.json()).catch(err => ({ ok: false, reason: String(err) }));
+    if (!r.ok) console.warn("ready failed:", r.reason);
   }
 
   _refreshHeroBtn(btn, hero, gold, mode, side) {
@@ -208,6 +254,7 @@ export class HUD {
     }
     this._refreshHeroBtn(this.el.heroL, lp?.hero, lp?.gold ?? 0, state.modes?.left  ?? "ai", 0);
     this._refreshHeroBtn(this.el.heroR, rp?.hero, rp?.gold ?? 0, state.modes?.right ?? "ai", 1);
+    this._refreshReady(state);
 
     this.el.timer.textContent    = state.t.toFixed(1) + "s";
     this.el.timerMax.textContent = state.maxT + "s";

@@ -46,6 +46,16 @@
 
     <div id="stage-wrap">
       <canvas id="stage"></canvas>
+      <div id="ready-overlay" class="hidden">
+        <div class="ready-card">
+          <div class="ready-title">等待双方准备</div>
+          <div class="ready-row">
+            <span id="ready-l" class="ready-slot left">L · 未准备</span>
+            <span id="ready-r" class="ready-slot right">R · 未准备</span>
+          </div>
+          <button id="btn-ready" class="primary">准备</button>
+        </div>
+      </div>
       <div id="banner" class="hidden">
         <div class="win-card">
           <div class="win-title" id="win-title">—</div>

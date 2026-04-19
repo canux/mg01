@@ -43,6 +43,22 @@ interface Session {
   listeners: Set<ServerResponse>;
   speed: number;    // 0 = paused; otherwise 0.5 / 1 / 2 / 4
   slots: { left: SlotHolder | null; right: SlotHolder | null };
+  ready: { left: boolean; right: boolean };  // mode==ai → 永远 true
+}
+
+function isAllReady(s: Session): boolean {
+  const l = s.modes.left  === "ai" || s.ready.left;
+  const r = s.modes.right === "ai" || s.ready.right;
+  return l && r;
+}
+
+/** 通过 x-token header 反查 side，返回 null = 未授权 */
+function authSide(s: Session, req: IncomingMessage): 0 | 1 | null {
+  const token = req.headers["x-token"];
+  if (typeof token !== "string" || !token) return null;
+  if (s.slots.left?.token  === token) return 0;
+  if (s.slots.right?.token === token) return 1;
+  return null;
 }
 
 function randomToken(): string {
@@ -65,7 +81,12 @@ function newSim(leftRace: string, rightRace: string, leftMode: SideMode, rightMo
   sim.addPlayer(lp);
   sim.addPlayer(rp);
 
-  return { sim, modes: { left: leftMode, right: rightMode }, recentEvents: [], phase: 0, timer: null, listeners: new Set(), speed: 1, slots: { left: null, right: null } };
+  return {
+    sim, modes: { left: leftMode, right: rightMode },
+    recentEvents: [], phase: 0, timer: null, listeners: new Set(), speed: 1,
+    slots: { left: null, right: null },
+    ready: { left: leftMode === "ai", right: rightMode === "ai" },
+  };
 }
 
 /** 返回 client 在当前 session 的 side（已占 → 返回该 side；否则尝试抢一个 mode=player 的空位；都满 → null 观众） */
@@ -119,6 +140,7 @@ const STRATEGIES: Record<string, ReturnType<typeof buildOrder>> = {
 function startLoop(s: Session) {
   if (s.timer) return;
   if (s.speed <= 0) return;
+  if (!isAllReady(s)) return;                  // 任一 player 未 ready → 不开 tick
   const prevEventCount = { n: s.sim.events.length };
   const interval = Math.max(10, Math.round(BASE_TICK_INTERVAL_MS / s.speed));
   s.timer = setInterval(() => {
@@ -223,6 +245,7 @@ function snapshot(s: Session) {
       left:  { claimed: !!s.slots.left,  mode: s.modes.left  },
       right: { claimed: !!s.slots.right, mode: s.modes.right },
     },
+    ready: { left: s.ready.left, right: s.ready.right, all: isAllReady(s) },
     players,
     buildings: bs,
     units: us,
@@ -318,11 +341,9 @@ const server = createServer((req, res) => {
     if (!current) { res.writeHead(400).end(JSON.stringify({ ok: false, reason: "no session" })); return; }
     const side = Number(url.searchParams.get("side") ?? "0") as 0 | 1;
     const sideMode = side === 0 ? current.modes.left : current.modes.right;
-    if (sideMode !== "player") {
-      res.writeHead(403, { "content-type": "application/json" });
-      res.end(JSON.stringify({ ok: false, reason: "side is AI-controlled" }));
-      return;
-    }
+    if (sideMode !== "player") { res.writeHead(403).end(JSON.stringify({ ok: false, reason: "side is AI-controlled" })); return; }
+    const authed = authSide(current, req);
+    if (authed !== side) { res.writeHead(401).end(JSON.stringify({ ok: false, reason: "bad token for this side" })); return; }
     const p = current.sim.players.find(pp => pp.side === side);
     const heroMeta = p ? HERO_BY_RACE[p.race] : null;
     if (!p || !heroMeta) { res.writeHead(400).end(JSON.stringify({ ok: false, reason: "no hero for race" })); return; }
@@ -334,10 +355,30 @@ const server = createServer((req, res) => {
 
   if (url.pathname === "/speed" && req.method === "POST") {
     if (!current) { res.writeHead(400).end(JSON.stringify({ ok: false, reason: "no session" })); return; }
+    // 仅当至少有一个 player side 时才要求 token；全 AI 局任何人都能控速
+    const anyPlayer = current.modes.left === "player" || current.modes.right === "player";
+    if (anyPlayer && authSide(current, req) === null) {
+      res.writeHead(401).end(JSON.stringify({ ok: false, reason: "token required" })); return;
+    }
     const rate = Number(url.searchParams.get("rate") ?? "1");
     const ok = applySpeed(current, rate);
     res.writeHead(ok ? 200 : 400, { "content-type": "application/json" });
     res.end(JSON.stringify({ ok, speed: current.speed }));
+    return;
+  }
+
+  if (url.pathname === "/ready" && req.method === "POST") {
+    if (!current) { res.writeHead(400).end(JSON.stringify({ ok: false, reason: "no session" })); return; }
+    const authed = authSide(current, req);
+    if (authed === null) { res.writeHead(401).end(JSON.stringify({ ok: false, reason: "token required" })); return; }
+    const wantRaw = url.searchParams.get("ready");
+    const want = wantRaw === null ? true : wantRaw === "true";
+    const key = authed === 0 ? "left" : "right";
+    current.ready[key] = want;
+    if (isAllReady(current)) startLoop(current);
+    broadcast(current);
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ ok: true, ready: current.ready, all: isAllReady(current) }));
     return;
   }
 
@@ -347,11 +388,9 @@ const server = createServer((req, res) => {
     const buildingId = url.searchParams.get("id") ?? "";
     const slotIdx = Number(url.searchParams.get("slot") ?? "-1");
     const sideMode = side === 0 ? current.modes.left : current.modes.right;
-    if (sideMode !== "player") {
-      res.writeHead(403, { "content-type": "application/json" });
-      res.end(JSON.stringify({ ok: false, reason: "side is AI-controlled" }));
-      return;
-    }
+    if (sideMode !== "player") { res.writeHead(403).end(JSON.stringify({ ok: false, reason: "side is AI-controlled" })); return; }
+    const authed = authSide(current, req);
+    if (authed !== side) { res.writeHead(401).end(JSON.stringify({ ok: false, reason: "bad token for this side" })); return; }
     const r = current.sim.manualBuild(side, buildingId, slotIdx);
     res.writeHead(r.ok ? 200 : 400, { "content-type": "application/json" });
     res.end(JSON.stringify(r));

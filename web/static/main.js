@@ -21,6 +21,10 @@ function getClientId() {
 
 const mySession = { clientId: getClientId(), side: null, token: null };
 
+function authHeaders() {
+  return mySession.token ? { "x-token": mySession.token } : {};
+}
+
 async function joinRoom() {
   try {
     const r = await fetch(`/join?clientId=${encodeURIComponent(mySession.clientId)}`, { method: "POST" })
@@ -79,7 +83,7 @@ function setupTap() {
     hud.openBuildSheet(slot, player.race, player.gold, async (buildingId) => {
       const r = await fetch(
         `/place?side=${slot.side}&id=${encodeURIComponent(buildingId)}&slot=${slot.idx}`,
-        { method: "POST" }
+        { method: "POST", headers: authHeaders() }
       ).then(r => r.json()).catch(err => ({ ok: false, reason: String(err) }));
       if (!r.ok) console.warn("place failed:", r.reason);
     });
@@ -90,6 +94,7 @@ function setupTap() {
 async function main() {
   await renderer.loadSprites();
   await hud.populatePickers();
+  hud.setAuth(authHeaders);
   hud.onNewGame(async (left, right, leftMode, rightMode) => {
     hud.clearLog();
     hud.closeBuildSheet();

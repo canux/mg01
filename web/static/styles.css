@@ -143,6 +143,29 @@ html, body {
 #banner.hidden { display: none; }
 @keyframes bannerIn { from { opacity: 0; } to { opacity: 1; } }
 
+#ready-overlay {
+  position: absolute; inset: 0; z-index: 35;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(2px);
+}
+#ready-overlay.hidden { display: none; }
+.ready-card {
+  background: linear-gradient(180deg, var(--bg-2), var(--bg));
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px 20px; text-align: center; min-width: 240px;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.5);
+}
+.ready-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--fg); }
+.ready-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; }
+.ready-slot {
+  padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
+  background: var(--bg); color: var(--mute); border: 1px solid var(--border);
+}
+.ready-slot.left  { color: var(--left); }
+.ready-slot.right { color: var(--right); }
+.ready-slot.go { background: rgba(95,214,122,0.15); color: #5cd67a; border-color: #5cd67a; }
+#btn-ready { min-width: 140px; }
+
 .win-card {
   min-width: 260px; max-width: 85%;
   background: linear-gradient(180deg, var(--bg-2), var(--bg));

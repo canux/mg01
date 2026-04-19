@@ -28,6 +28,8 @@ export class HUD {
       sheetList:document.getElementById("sheet-list"),
       sheetClose:document.getElementById("sheet-close"),
       speedbar: document.getElementById("speedbar"),
+      heroL:    document.getElementById("hero-left"),
+      heroR:    document.getElementById("hero-right"),
     };
     this._lastEventT = -1;
     this._buildingsByRace = new Map();   // race -> array (cached)
@@ -38,6 +40,38 @@ export class HUD {
       const rate = btn.getAttribute("data-rate");
       await fetch(`/speed?rate=${rate}`, { method: "POST" }).catch(() => {});
     });
+    this.el.heroL.addEventListener("click", () => this._hireHero(0));
+    this.el.heroR.addEventListener("click", () => this._hireHero(1));
+  }
+
+  async _hireHero(side) {
+    const r = await fetch(`/hero?side=${side}`, { method: "POST" })
+      .then(r => r.json()).catch(err => ({ ok: false, reason: String(err) }));
+    if (!r.ok) console.warn("hero hire failed:", r.reason);
+  }
+
+  _refreshHeroBtn(btn, hero, gold, mode) {
+    btn.classList.remove("ready", "cooldown");
+    if (!hero) {
+      btn.disabled = true;
+      btn.querySelector(".hero-name").textContent = "—";
+      btn.querySelector(".hero-sub").textContent  = "无英雄";
+      return;
+    }
+    btn.querySelector(".hero-name").textContent = hero.nameCn;
+    if (hero.alive) {
+      btn.disabled = true;
+      btn.querySelector(".hero-sub").textContent = "在场";
+    } else if (hero.reviveIn > 0) {
+      btn.disabled = true;
+      btn.classList.add("cooldown");
+      btn.querySelector(".hero-sub").textContent = `复活 ${hero.reviveIn.toFixed(0)}s`;
+    } else {
+      const afford = gold >= hero.nextCost;
+      btn.disabled = !afford || mode !== "player";
+      btn.classList.toggle("ready", afford && mode === "player");
+      btn.querySelector(".hero-sub").textContent = `召唤 ${hero.nextCost}g`;
+    }
   }
 
   modes() {
@@ -121,6 +155,8 @@ export class HUD {
       this.el.incomeR.textContent = `+${rp.income}/10s`;
       this.el.raceR.textContent = RACE_NAME_CN[rp.race] ?? rp.race;
     }
+    this._refreshHeroBtn(this.el.heroL, lp?.hero, lp?.gold ?? 0, state.modes?.left ?? "ai");
+    this._refreshHeroBtn(this.el.heroR, rp?.hero, rp?.gold ?? 0, state.modes?.right ?? "ai");
 
     this.el.timer.textContent    = state.t.toFixed(1) + "s";
     this.el.timerMax.textContent = state.maxT + "s";

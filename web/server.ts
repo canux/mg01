@@ -19,6 +19,15 @@ const PORT = Number(process.env.PORT ?? 8080);
 const BASE_TICK_INTERVAL_MS = 100;    // 1x = 10Hz
 const SPEED_CHOICES = [0, 0.5, 1, 2, 4] as const;  // 0 = 暂停
 
+/** 各族英雄 id (role=='legendary')；启动时从 units 反查一次 */
+const HERO_BY_RACE: Record<string, { id: string; nameCn: string; cost: number }> = (() => {
+  const out: Record<string, { id: string; nameCn: string; cost: number }> = {};
+  for (const [id, u] of units) {
+    if (u.role === "legendary") out[u.race] = { id, nameCn: u.nameCn, cost: u.cost };
+  }
+  return out;
+})();
+
 // ---- 战斗 ----
 
 type SideMode = "ai" | "player";
@@ -111,14 +120,27 @@ function startLoop(s: Session) {
 
 function snapshot(s: Session) {
   const sim = s.sim;
-  const players = sim.players.map(p => ({
-    side: p.side,
-    race: p.race,
-    name: p.name,
-    gold: Math.round(p.gold),
-    income: p.incomePerInterval(balance.baseIncome),
-    unitsSpawned: p.stats.unitsSpawned,
-  }));
+  const players = sim.players.map(p => {
+    const heroMeta = HERO_BY_RACE[p.race];
+    const hi = sim.playerHeroInfo(p);
+    const hadHero = p.heroReviveAt > 0 || hi.alive || p.heroUnitId !== null;
+    const nextCost = heroMeta ? (hadHero ? Math.round(heroMeta.cost / 2) : heroMeta.cost) : 0;
+    return {
+      side: p.side,
+      race: p.race,
+      name: p.name,
+      gold: Math.round(p.gold),
+      income: p.incomePerInterval(balance.baseIncome),
+      unitsSpawned: p.stats.unitsSpawned,
+      hero: heroMeta ? {
+        id: heroMeta.id,
+        nameCn: heroMeta.nameCn,
+        alive: hi.alive,
+        reviveIn: +hi.reviveIn.toFixed(1),
+        nextCost,
+      } : null,
+    };
+  });
   const bs = sim.buildings.filter(b => b.alive).map(b => ({
     id: b.id,
     side: b.side,
@@ -241,6 +263,24 @@ const server = createServer((req, res) => {
     current = newSim(left, right, leftMode, rightMode);
     res.writeHead(200, { "content-type": "application/json" });
     res.end(JSON.stringify({ ok: true, left, right, leftMode, rightMode }));
+    return;
+  }
+
+  if (url.pathname === "/hero" && req.method === "POST") {
+    if (!current) { res.writeHead(400).end(JSON.stringify({ ok: false, reason: "no session" })); return; }
+    const side = Number(url.searchParams.get("side") ?? "0") as 0 | 1;
+    const sideMode = side === 0 ? current.modes.left : current.modes.right;
+    if (sideMode !== "player") {
+      res.writeHead(403, { "content-type": "application/json" });
+      res.end(JSON.stringify({ ok: false, reason: "side is AI-controlled" }));
+      return;
+    }
+    const p = current.sim.players.find(pp => pp.side === side);
+    const heroMeta = p ? HERO_BY_RACE[p.race] : null;
+    if (!p || !heroMeta) { res.writeHead(400).end(JSON.stringify({ ok: false, reason: "no hero for race" })); return; }
+    const r = current.sim.hireHero(side, heroMeta.id);
+    res.writeHead(r.ok ? 200 : 400, { "content-type": "application/json" });
+    res.end(JSON.stringify(r));
     return;
   }
 

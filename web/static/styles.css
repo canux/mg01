@@ -75,6 +75,30 @@ html, body {
 .speedbar button.active { background: var(--gold); color: #111; border-color: var(--gold); }
 .speedbar button:hover { color: var(--fg); }
 
+/* ---- 英雄栏 ---- */
+#hero-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.hero-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  background: var(--bg-2); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 4px 8px; font-family: inherit; cursor: pointer;
+}
+.hero-btn.left  { border-left:  3px solid var(--left); }
+.hero-btn.right { border-right: 3px solid var(--right); }
+.hero-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.hero-btn.ready { background: linear-gradient(180deg, #2b3a6e, #1b2347); }
+.hero-btn .hero-name { font-size: 12px; font-weight: 700; }
+.hero-btn .hero-sub  { font-size: 10px; color: var(--mute); }
+.hero-btn.ready .hero-sub { color: var(--gold); }
+.hero-btn.cooldown .hero-sub { color: #ff8a3d; }
+
 /* ---- 画布 ---- */
 #stage-wrap {
   position: relative;

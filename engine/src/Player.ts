@@ -19,6 +19,11 @@ export class Player {
   /** 统计：总收入 / 总花费 / 造兵数 */
   stats = { totalIncome: 0, totalSpent: 0, unitsSpawned: 0 };
 
+  /** 当前活体英雄的 unit id；null = 未召唤或已死 */
+  heroUnitId: number | null = null;
+  /** 英雄死亡后下次可复活时间；0 = 无冷却（首次召唤） */
+  heroReviveAt: number = 0;
+
   constructor(side: Side, race: string, name: string, startGold: number, firstIncomeAt: number) {
     this.side = side;
     this.race = race;

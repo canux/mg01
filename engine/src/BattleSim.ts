@@ -12,9 +12,12 @@ import type { Player } from "./Player.ts";
 
 export interface SimEvent {
   t: number;
-  kind: "spawn" | "attack" | "death" | "building_down" | "castle_down" | "income" | "build" | "phase" | "projectile" | "spell" | "end";
+  kind: "spawn" | "attack" | "death" | "building_down" | "castle_down" | "income" | "build" | "phase" | "projectile" | "spell" | "hero" | "end";
   msg: string;
 }
+
+/** 英雄死亡→复活冷却时间（秒）；复活价 = 初始 cost / 2 */
+const HERO_REVIVE_SEC = 30;
 
 /** 主城攻城阶段：时刻 (秒) → 主城护甲 + 每秒被动衰减 HP。维持第一个 <= now 的条目。 */
 const SIEGE_PHASES: Array<{ t: number; castleArmor: number; decayPerSec: number; label: string }> = [
@@ -158,6 +161,17 @@ export class BattleSim {
     // 4. 清尸体
     this.units = this.units.filter(u => u.alive || (this.now - u.deadAt) < this.balance.rules.deathDissipateSec);
 
+    // 4.5 英雄死亡 → 进入复活冷却
+    for (const p of this.players) {
+      if (p.heroUnitId === null) continue;
+      const u = this.units.find(uu => uu.id === p.heroUnitId);
+      if (!u || !u.alive) {
+        this.log({ t: this.now, kind: "hero", msg: `${p.name} hero down — revive in ${HERO_REVIVE_SEC}s (half price)` });
+        p.heroUnitId = null;
+        p.heroReviveAt = this.now + HERO_REVIVE_SEC;
+      }
+    }
+
     // 5. 判胜
     if (this._hasLeftCastleEver && this._hasRightCastleEver) {
       const leftCastle = this.castle(Side.Left);
@@ -263,6 +277,46 @@ export class BattleSim {
     const slot = all[slotIdx]!;
     const key = `${slot.x.toFixed(0)},${slot.y.toFixed(0)}`;
     return !this.buildings.some(b => b.alive && b.side === side && `${b.pos.x.toFixed(0)},${b.pos.y.toFixed(0)}` === key);
+  }
+
+  /** 公共：召唤/复活英雄。返回 { ok, reason?, cost? } */
+  hireHero(side: Side, heroId: string): { ok: boolean; reason?: string; cost?: number } {
+    const p = this.players.find(pp => pp.side === side);
+    if (!p) return { ok: false, reason: "no such player" };
+    const tpl = this._lookupUnit(heroId);
+    if (!tpl) return { ok: false, reason: `unknown unit ${heroId}` };
+    if (tpl.role !== "legendary") return { ok: false, reason: `${heroId} is not a hero` };
+    if (tpl.race !== p.race) return { ok: false, reason: `race mismatch (${tpl.race} vs ${p.race})` };
+    if (p.heroUnitId !== null) {
+      const live = this.units.find(u => u.id === p.heroUnitId);
+      if (live && live.alive) return { ok: false, reason: "英雄已在场" };
+    }
+    if (this.now < p.heroReviveAt) {
+      const remain = (p.heroReviveAt - this.now).toFixed(1);
+      return { ok: false, reason: `英雄复活冷却中 (${remain}s)` };
+    }
+    const isRevive = p.heroReviveAt > 0;
+    const cost = isRevive ? Math.round(tpl.cost / 2) : tpl.cost;
+    if (!p.spend(cost)) return { ok: false, reason: `need ${cost} gold (have ${p.gold})` };
+    const laneHalf = this.balance.laneLength / 2;
+    const castleY = side === Side.Left ? -laneHalf : laneHalf;
+    const forwardY = castleY + (side === Side.Left ? 150 : -150);
+    const u = this.placeUnit(tpl, side, new Vec2(0, forwardY));
+    p.heroUnitId = u.id;
+    this.log({ t: this.now, kind: "hero",
+      msg: `${p.name} ${isRevive ? "revives" : "summons"} ${tpl.nameCn} (-${cost} gold, ${p.gold} left)` });
+    return { ok: true, cost };
+  }
+
+  /** 英雄查询：给 server snapshot 用 */
+  playerHeroInfo(p: Player): { alive: boolean; reviveIn: number } {
+    let alive = false;
+    if (p.heroUnitId !== null) {
+      const u = this.units.find(uu => uu.id === p.heroUnitId);
+      alive = !!(u && u.alive);
+    }
+    const reviveIn = Math.max(0, p.heroReviveAt - this.now);
+    return { alive, reviveIn };
   }
 
   /** 公共：玩家手动下单造建筑。返回 { ok, reason? } */

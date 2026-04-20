@@ -58,7 +58,7 @@ interface Session {
 // 录像只存：config + 命令元组 + 终局结果 + 关键事件 sha1 digest。
 // 关键事件原文不存（看回放靠服务端 replay 再生成），单局体积约 < 2KB。
 
-type CommandKind = "place" | "hero" | "ready" | "speed";
+type CommandKind = "place" | "hero" | "ready" | "speed" | "forfeit";
 
 // [t(秒,2位小数), side, kind, payload]，紧凑数组减少 JSON 体积
 type RecCommand = [number, 0 | 1, CommandKind, Record<string, string | number | boolean>];
@@ -141,6 +141,13 @@ function replayAndVerify(rec: Recording): {
       switch (kind) {
         case "place": r = sim.manualBuild(side, String(payload.id), Number(payload.slot)); break;
         case "hero": r = sim.hireHero(side, String(payload.id)); break;
+        case "forfeit": {
+          sim.ended = true;
+          sim.winner = side === 0 ? Side.Right : Side.Left;
+          const key = side === 0 ? "left" : "right";
+          sim.log({ t: sim.now, kind: "end", msg: `${key} surrendered` });
+          r = { ok: true }; break;
+        }
         case "ready":
         case "speed":
           r = { ok: true }; break;       // 这俩对 sim 决定性无影响
@@ -148,6 +155,7 @@ function replayAndVerify(rec: Recording): {
       if (r.ok) applied++; else failed++;
       qi++;
     }
+    if (sim.ended) break;      // forfeit 指令把 sim 设为 ended 时，不再 tick
     sim.tick();
     void dt;
   }
@@ -607,6 +615,22 @@ const server = createServer((req, res) => {
     if (r.ok) recordCommand(current, side, "place", { id: buildingId, slot: slotIdx });
     res.writeHead(r.ok ? 200 : 400, { "content-type": "application/json" });
     res.end(JSON.stringify(r));
+    return;
+  }
+
+  if (url.pathname === "/forfeit" && req.method === "POST") {
+    if (!current) { res.writeHead(400).end(JSON.stringify({ ok: false, reason: "no session" })); return; }
+    if (current.sim.ended) { res.writeHead(400).end(JSON.stringify({ ok: false, reason: "match ended" })); return; }
+    const authed = authSide(current, req);
+    if (authed === null) { res.writeHead(401).end(JSON.stringify({ ok: false, reason: "token required" })); return; }
+    recordCommand(current, authed, "forfeit", {});
+    current.sim.ended = true;
+    current.sim.winner = authed === 0 ? Side.Right : Side.Left;
+    const key = authed === 0 ? "left" : "right";
+    current.sim.log({ t: current.sim.now, kind: "end", msg: `${key} surrendered` });
+    drainKeyEvents(current); finalizeRecording(current); stopLoop(current); broadcast(current);
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ ok: true, winner: current.sim.winner }));
     return;
   }
 

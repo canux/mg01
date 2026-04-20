@@ -4,6 +4,27 @@ const RACE_NAME_CN = {
   human: "人族", orc: "兽族", undead: "不死族", nightelf: "暗夜精灵",
 };
 
+// ---- 触感反馈：移动端 navigator.vibrate；桌面端给 #app 加 CSS shake class ----
+const _canVibrate = typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
+function _shake(strength) {
+  const app = document.getElementById("app");
+  if (!app) return;
+  const cls = strength === "long" ? "shake-long" : "shake-tap";
+  app.classList.remove("shake-tap", "shake-long");
+  // 强制重排以重启动画
+  void app.offsetWidth;
+  app.classList.add(cls);
+  setTimeout(() => app.classList.remove(cls), strength === "long" ? 500 : 180);
+}
+export function hapticTap() {
+  if (_canVibrate) navigator.vibrate(20);
+  else _shake("tap");
+}
+export function hapticLong() {
+  if (_canVibrate) navigator.vibrate([0, 80, 40, 120]);
+  else _shake("long");
+}
+
 export class HUD {
   constructor() {
     this.el = {
@@ -49,6 +70,7 @@ export class HUD {
       readyR:   document.getElementById("ready-r"),
       btnReady: document.getElementById("btn-ready"),
       dcToast:  document.getElementById("disconnect-toast"),
+      btnForfeit: document.getElementById("btn-forfeit"),
     };
     this._lastEventT = -1;
     this._lastGold = { 0: null, 1: null };
@@ -64,6 +86,7 @@ export class HUD {
     });
     this.el.heroL.addEventListener("click", () => this._hireHero(0));
     this.el.heroR.addEventListener("click", () => this._hireHero(1));
+    this.el.btnForfeit.addEventListener("click", () => this._forfeit());
     this._myReady = false;
     this.el.btnReady.addEventListener("click", () => {
       this._myReady = !this._myReady;
@@ -114,6 +137,28 @@ export class HUD {
     const r = await fetch(`/hero?side=${side}`, { method: "POST", headers: this._authHeaders() })
       .then(r => r.json()).catch(err => ({ ok: false, reason: String(err) }));
     if (!r.ok) console.warn("hero hire failed:", r.reason);
+    else hapticTap();
+  }
+
+  async _forfeit() {
+    if (!confirm("确认投降？本局将判负。")) return;
+    const r = await fetch("/forfeit", { method: "POST", headers: this._authHeaders() })
+      .then(r => r.json()).catch(err => ({ ok: false, reason: String(err) }));
+    if (!r.ok) console.warn("forfeit failed:", r.reason);
+  }
+
+  _refreshForfeit(state) {
+    const mySide = this._my.side;
+    const myMode = mySide === 0 ? state.modes?.left : mySide === 1 ? state.modes?.right : null;
+    const canShow = mySide !== null && myMode === "player" && !state.ended && state.t > 0;
+    this.el.btnForfeit.classList.toggle("hidden", !canShow);
+  }
+
+  /** 胜负状态首次变为 ended → 触发触感反馈。每次 state.ended 从 false 变 true 触发一次。 */
+  _detectMatchEnd(state) {
+    const now = !!state.ended;
+    if (now && !this._endedBefore) hapticLong();
+    this._endedBefore = now;
   }
 
   _refreshReady(state) {
@@ -302,6 +347,8 @@ export class HUD {
     }
     this._refreshHeroBtn(this.el.heroL, lp?.hero, lp?.gold ?? 0, state.modes?.left  ?? "ai", 0);
     this._refreshHeroBtn(this.el.heroR, rp?.hero, rp?.gold ?? 0, state.modes?.right ?? "ai", 1);
+    this._refreshForfeit(state);
+    this._detectMatchEnd(state);
     this._refreshReady(state);
     this._refreshDisconnect(state);
 

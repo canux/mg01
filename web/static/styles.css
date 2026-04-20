@@ -128,7 +128,7 @@ html, body {
     radial-gradient(ellipse at 50% 80%, rgba(185,74,43,0.16), transparent 60%),
     #0a0f1e;
 }
-#stage { display: block; width: 100%; height: 100%; }
+#stage { display: block; width: 100%; height: 100%; touch-action: none; }
 #banner {
   position: absolute;
   inset: 0;
@@ -359,3 +359,20 @@ select.mode {
 #sheet-list li .nm { font-weight: 600; }
 #sheet-list li .kind { color: var(--mute); font-size: 11px; }
 #sheet-list li .cost { color: var(--gold); font-weight: 700; }
+
+/* ---- 投降按钮 + 触感反馈 ---- */
+.forfeit-btn {
+  background: rgba(220, 60, 60, 0.15); color: #ff9898;
+  border: 1px solid rgba(220, 60, 60, 0.4); padding: 4px 10px;
+  border-radius: 6px; font-size: 11px; cursor: pointer; margin-top: 4px;
+  transition: all 0.1s;
+}
+.forfeit-btn:hover  { background: rgba(220, 60, 60, 0.3); color: #fff; }
+.forfeit-btn:active { transform: scale(0.96); }
+.forfeit-btn.hidden { display: none; }
+
+/* 桌面端：移动端用 navigator.vibrate，这两个 class 只在不支持震动时触发 */
+@keyframes shakeTap  { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-2px,1px)} }
+@keyframes shakeLong { 0%{transform:translate(0,0)} 25%{transform:translate(-6px,2px)} 50%{transform:translate(5px,-3px)} 75%{transform:translate(-3px,4px)} 100%{transform:translate(0,0)} }
+#app.shake-tap  { animation: shakeTap 0.18s ease-out; }
+#app.shake-long { animation: shakeLong 0.5s ease-out; }

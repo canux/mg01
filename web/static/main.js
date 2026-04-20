@@ -1,6 +1,6 @@
 // 入口：SSE 接收 + 渲染循环 + 新局按钮 + 玩家点击放置
 import { Renderer } from "./renderer.js";
-import { HUD } from "./ui.js";
+import { HUD, hapticTap } from "./ui.js";
 
 const canvas = document.getElementById("stage");
 const renderer = new Renderer(canvas);
@@ -86,9 +86,11 @@ function setupTap() {
         { method: "POST", headers: authHeaders() }
       ).then(r => r.json()).catch(err => ({ ok: false, reason: String(err) }));
       if (!r.ok) console.warn("place failed:", r.reason);
+      else hapticTap();
     });
   };
-  canvas.addEventListener("click", handler);
+  // 用 pointerdown 覆盖 鼠标 + 触屏 + 触控笔，避免移动端 click 300ms 延迟
+  canvas.addEventListener("pointerdown", handler);
 }
 
 async function main() {

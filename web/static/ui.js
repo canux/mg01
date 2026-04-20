@@ -40,6 +40,9 @@ export class HUD {
       winGoldL: document.getElementById("win-gold-l"),
       winGoldR: document.getElementById("win-gold-r"),
       btnRematch: document.getElementById("btn-rematch"),
+      btnReplaySave:   document.getElementById("btn-replay-save"),
+      btnReplayVerify: document.getElementById("btn-replay-verify"),
+      replayStatus:    document.getElementById("replay-status"),
       myside:   document.getElementById("myside"),
       readyOverlay: document.getElementById("ready-overlay"),
       readyL:   document.getElementById("ready-l"),
@@ -251,6 +254,37 @@ export class HUD {
     const fire = () => cb(this.el.pickL.value, this.el.pickR.value, this.el.modeL.value, this.el.modeR.value);
     this.el.btnNew.addEventListener("click", fire);
     this.el.btnRematch.addEventListener("click", fire);
+    this.el.btnReplaySave.addEventListener("click", () => this._downloadReplay());
+    this.el.btnReplayVerify.addEventListener("click", () => this._verifyReplay());
+  }
+
+  async _downloadReplay() {
+    this.el.replayStatus.textContent = "下载中…";
+    try {
+      const r = await fetch("/replay/last").then(r => r.json());
+      if (!r.ok) { this.el.replayStatus.textContent = "失败：" + r.reason; return; }
+      const rec = r.recording;
+      const name = `replay-${rec.config.l}-vs-${rec.config.r}-${new Date(rec.startedAt).toISOString().slice(0,19).replace(/[T:]/g,"")}.json`;
+      const blob = new Blob([JSON.stringify(rec)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = Object.assign(document.createElement("a"), { href: url, download: name });
+      a.click();
+      URL.revokeObjectURL(url);
+      const size = new Blob([JSON.stringify(rec)]).size;
+      this.el.replayStatus.textContent = `已下载 ${name} (${size}B)`;
+    } catch (err) { this.el.replayStatus.textContent = "失败：" + err; }
+  }
+
+  async _verifyReplay() {
+    this.el.replayStatus.textContent = "服务端重放中…";
+    try {
+      const r = await fetch("/replay/verify", { method: "POST" }).then(r => r.json());
+      if (!r.ok && r.matched === undefined) { this.el.replayStatus.textContent = "失败：" + r.reason; return; }
+      const m = r.matched;
+      const tag = r.ok ? "✓ 校验通过" : "✗ 校验失败";
+      this.el.replayStatus.textContent =
+        `${tag}  digest=${m.digest?"✓":"✗"} winner=${m.winner?"✓":"✗"} t=${m.finalT?"✓":"✗"}  应用指令 ${r.cmdsApplied}/${r.cmdsApplied + r.cmdsFailed}`;
+    } catch (err) { this.el.replayStatus.textContent = "失败：" + err; }
   }
 
   update(state) {

@@ -204,6 +204,13 @@ html, body {
 .win-gold b { color: var(--gold); }
 .win-vs { font-size: 11px; color: var(--mute); font-weight: 700; letter-spacing: 2px; }
 #btn-rematch { min-width: 140px; }
+.win-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+.win-actions .secondary {
+  background: transparent; color: var(--fg); border: 1px solid var(--mute);
+  padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;
+}
+.win-actions .secondary:hover { border-color: var(--fg); }
+.replay-status { margin-top: 6px; font-size: 11px; color: var(--mute); min-height: 14px; text-align: center; }
 
 /* ---- 底部控制 ---- */
 #hud-bottom {

@@ -4,6 +4,7 @@
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, extname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -47,6 +48,127 @@ interface Session {
   slots: { left: SlotHolder | null; right: SlotHolder | null };
   ready: { left: boolean; right: boolean };  // mode==ai → 永远 true
   disconnectedSince: { left: number | null; right: number | null };  // Date.now() ms
+  recording: Recording;
+  prevEventCount: number;    // 用于 tick 时增量抽取 key events
+}
+
+// ---- 录像 ----
+//
+// 紧凑确定性 command-log。engine 内无 Math.random → sim 完全确定。
+// 录像只存：config + 命令元组 + 终局结果 + 关键事件 sha1 digest。
+// 关键事件原文不存（看回放靠服务端 replay 再生成），单局体积约 < 2KB。
+
+type CommandKind = "place" | "hero" | "ready" | "speed";
+
+// [t(秒,2位小数), side, kind, payload]，紧凑数组减少 JSON 体积
+type RecCommand = [number, 0 | 1, CommandKind, Record<string, string | number | boolean>];
+
+interface RecResult {
+  winner: number | null;
+  finalT: number;
+  castleHpL: number;
+  castleHpR: number;
+  spawnedL: number;
+  spawnedR: number;
+}
+
+interface Recording {
+  v: 1;
+  startedAt: number;
+  config: { l: string; r: string; lm: SideMode; rm: SideMode };
+  cmds: RecCommand[];
+  result: RecResult | null;
+  digest: string | null;          // sha1("t|kind|side" 行序列)
+}
+
+/** 用于摘要：build / hero / castle_down / building_down / phase / end */
+const KEY_EVENT_KINDS = new Set(["build", "hero", "castle_down", "building_down", "phase", "end"]);
+
+/** 从 SimEvent.msg 解出 side：仅匹配开头的 "L-" / "R-" / "left " / "right "；否则 -1。 */
+function parseSideFromMsg(msg: string): number {
+  if (/^(L-|left\b)/.test(msg))  return 0;
+  if (/^(R-|right\b)/.test(msg)) return 1;
+  return -1;
+}
+
+function digestKeyEvents(events: { t: number; kind: string; msg: string }[]): string {
+  const h = createHash("sha1");
+  for (const ev of events) {
+    if (!KEY_EVENT_KINDS.has(ev.kind)) continue;
+    h.update(`${ev.t.toFixed(2)}|${ev.kind}|${parseSideFromMsg(ev.msg)}\n`);
+  }
+  return h.digest("hex");
+}
+
+function recordCommand(s: Session, side: 0 | 1, kind: CommandKind, payload: Record<string, string | number | boolean>) {
+  if (s.sim.ended) return;
+  s.recording.cmds.push([+s.sim.now.toFixed(2), side, kind, payload]);
+}
+
+/** 服务端 deterministic 重放：跑 fresh sim、按 t 喂指令、与录像 digest 比较。 */
+function replayAndVerify(rec: Recording): {
+  ok: boolean;
+  matched: { digest: boolean; winner: boolean; finalT: boolean };
+  expected: { digest: string; winner: number | null; finalT: number };
+  actual: { digest: string; winner: number | null; finalT: number };
+  cmdsApplied: number;
+  cmdsFailed: number;
+} {
+  const sim = new BattleSim({ balance, verbose: false });
+  sim.setUnitLookup(id => units.get(id));
+  sim.setBuildingLookup(id => buildings.get(id));
+  sim.setRaceLookup(id => races.find(r => r.id === id));
+  sim.setSpellLookup(id => spells.get(id));
+
+  const lp = new Player(Side.Left,  rec.config.l, `L-${rec.config.l}`, balance.startGold, balance.incomeIntervalSec);
+  const rp = new Player(Side.Right, rec.config.r, `R-${rec.config.r}`, balance.startGold, balance.incomeIntervalSec);
+  if (rec.config.lm === "ai") lp.strategy = strategyFor(rec.config.l);
+  if (rec.config.rm === "ai") rp.strategy = strategyFor(rec.config.r);
+  sim.addPlayer(lp);
+  sim.addPlayer(rp);
+
+  // 按 t 排序的命令队列；player-only 类指令在 sim.now>=t 时执行。
+  const queue = rec.cmds.slice().sort((a, b) => a[0] - b[0]);
+  let qi = 0, applied = 0, failed = 0;
+  const dt = 1 / balance.tickRate;       // 每 tick 推进的秒数
+  const maxT = balance.rules.maxBattleSec;
+
+  while (!sim.ended && sim.now < maxT) {
+    // 喂当前 tick 内到期的指令
+    while (qi < queue.length && queue[qi]![0] <= sim.now + 1e-6) {
+      const [, side, kind, payload] = queue[qi]!;
+      let r: { ok: boolean } = { ok: false };
+      switch (kind) {
+        case "place": r = sim.manualBuild(side, String(payload.id), Number(payload.slot)); break;
+        case "hero": r = sim.hireHero(side, String(payload.id)); break;
+        case "ready":
+        case "speed":
+          r = { ok: true }; break;       // 这俩对 sim 决定性无影响
+      }
+      if (r.ok) applied++; else failed++;
+      qi++;
+    }
+    sim.tick();
+    void dt;
+  }
+  if (!sim.ended && sim.now >= maxT) {
+    sim.ended = true;
+    sim.winner = null;
+    sim.log({ t: sim.now, kind: "end", msg: `timeout at ${sim.now.toFixed(1)}s (draw)` });
+  }
+  const actualDigest = digestKeyEvents(sim.events);
+  const actual = { digest: actualDigest, winner: sim.winner, finalT: +sim.now.toFixed(2) };
+  const expected = { digest: rec.digest!, winner: rec.result!.winner, finalT: rec.result!.finalT };
+  const matched = {
+    digest: expected.digest === actual.digest,
+    winner: expected.winner === actual.winner,
+    finalT: Math.abs(expected.finalT - actual.finalT) < 0.2,
+  };
+  return {
+    ok: matched.digest && matched.winner && matched.finalT,
+    matched, expected, actual,
+    cmdsApplied: applied, cmdsFailed: failed,
+  };
 }
 
 const DISCONNECT_FORFEIT_MS = 10_000;
@@ -81,8 +203,8 @@ function newSim(leftRace: string, rightRace: string, leftMode: SideMode, rightMo
 
   const lp = new Player(Side.Left,  leftRace,  `L-${leftRace}`,  balance.startGold, balance.incomeIntervalSec);
   const rp = new Player(Side.Right, rightRace, `R-${rightRace}`, balance.startGold, balance.incomeIntervalSec);
-  if (leftMode === "ai")  lp.strategy = STRATEGIES[leftRace]  ?? STRATEGIES.human;
-  if (rightMode === "ai") rp.strategy = STRATEGIES[rightRace] ?? STRATEGIES.orc;
+  if (leftMode === "ai")  lp.strategy = strategyFor(leftRace);
+  if (rightMode === "ai") rp.strategy = strategyFor(rightRace);
   sim.addPlayer(lp);
   sim.addPlayer(rp);
 
@@ -92,7 +214,40 @@ function newSim(leftRace: string, rightRace: string, leftMode: SideMode, rightMo
     slots: { left: null, right: null },
     ready: { left: leftMode === "ai", right: rightMode === "ai" },
     disconnectedSince: { left: null, right: null },
+    recording: {
+      v: 1,
+      startedAt: Date.now(),
+      config: { l: leftRace, r: rightRace, lm: leftMode, rm: rightMode },
+      cmds: [], result: null, digest: null,
+    },
+    prevEventCount: 0,
   };
+}
+
+/** 把新事件入 recentEvents（关键事件不在录像里逐条存，只在终局算 digest）。 */
+function drainKeyEvents(s: Session) {
+  const evs = s.sim.events;
+  while (s.prevEventCount < evs.length) {
+    const ev = evs[s.prevEventCount++]!;
+    s.recentEvents.push(ev);
+    if (s.recentEvents.length > 30) s.recentEvents.shift();
+  }
+}
+
+function finalizeRecording(s: Session) {
+  if (s.recording.result) return;
+  const lp = s.sim.players[0], rp = s.sim.players[1];
+  const castleL = s.sim.buildings.find(b => b.tpl.kind === "castle" && b.side === Side.Left);
+  const castleR = s.sim.buildings.find(b => b.tpl.kind === "castle" && b.side === Side.Right);
+  s.recording.result = {
+    winner: s.sim.winner,
+    finalT: +s.sim.now.toFixed(2),
+    castleHpL: castleL ? Math.max(0, Math.round(castleL.hp)) : 0,
+    castleHpR: castleR ? Math.max(0, Math.round(castleR.hp)) : 0,
+    spawnedL: lp?.stats.unitsSpawned ?? 0,
+    spawnedR: rp?.stats.unitsSpawned ?? 0,
+  };
+  s.recording.digest = digestKeyEvents(s.sim.events);
 }
 
 /** 某 slot 的 clientId 是否还有任一活跃 SSE listener */
@@ -146,35 +301,39 @@ function applySpeed(s: Session, speed: number) {
   return true;
 }
 
-const STRATEGIES: Record<string, ReturnType<typeof buildOrder>> = {
-  human: buildOrder("human-rush", [
+// 关键：strategy 内部持有 idx 状态。每个 player 必须拿到自己的实例，否则跨局/跨边共享会破坏确定性。
+const STRATEGIES: Record<string, () => ReturnType<typeof buildOrder>> = {
+  human: () => buildOrder("human-rush", [
     "human_goldmine", "human_barracks_footman", "human_barracks_footman",
     "human_barracks_rifleman", "human_goldmine", "human_barracks_footman",
     "human_barracks_rifleman", "human_tower", "human_barracks_rifleman",
   ]),
-  orc: buildOrder("orc-rush", [
+  orc: () => buildOrder("orc-rush", [
     "orc_goldmine", "orc_trollden_headhunter", "orc_barracks_grunt",
     "orc_goldmine", "orc_trollden_headhunter", "orc_barracks_grunt",
     "orc_tower", "orc_workshop_catapult",
   ]),
-  undead: buildOrder("undead-rush", [
+  undead: () => buildOrder("undead-rush", [
     "ud_haunted", "ud_crypt_ghoul", "ud_crypt_ghoul", "ud_haunted",
     "ud_crypt_cryptfiend", "ud_tower", "ud_graveyard_meatwagon", "ud_boneyard_gargoyle",
   ]),
-  nightelf: buildOrder("nightelf-rush", [
+  nightelf: () => buildOrder("nightelf-rush", [
     "ne_entangledmine", "ne_archershop_archer", "ne_archershop_archer",
     "ne_entangledmine", "ne_ancient_huntress", "ne_tower", "ne_ancientofwind_glaive",
   ]),
 };
 
+function strategyFor(race: string) {
+  return (STRATEGIES[race] ?? STRATEGIES.human)();
+}
+
 function startLoop(s: Session) {
   if (s.timer) return;
   if (s.speed <= 0) return;
   if (!isAllReady(s)) return;                  // 任一 player 未 ready → 不开 tick
-  const prevEventCount = { n: s.sim.events.length };
   const interval = Math.max(10, Math.round(BASE_TICK_INTERVAL_MS / s.speed));
   s.timer = setInterval(() => {
-    if (s.sim.ended) { stopLoop(s); broadcast(s); return; }
+    if (s.sim.ended) { drainKeyEvents(s); finalizeRecording(s); stopLoop(s); broadcast(s); return; }
     // 断线判负
     const now = Date.now();
     for (const key of ["left", "right"] as const) {
@@ -183,23 +342,17 @@ function startLoop(s: Session) {
         s.sim.ended = true;
         s.sim.winner = key === "left" ? Side.Right : Side.Left;
         s.sim.log({ t: s.sim.now, kind: "end", msg: `${key} forfeit (disconnected > ${DISCONNECT_FORFEIT_MS / 1000}s)` });
-        stopLoop(s); broadcast(s); return;
+        drainKeyEvents(s); finalizeRecording(s); stopLoop(s); broadcast(s); return;
       }
     }
     if (s.sim.now >= balance.rules.maxBattleSec) {
       s.sim.ended = true;
       s.sim.winner = null;
       s.sim.log({ t: s.sim.now, kind: "end", msg: `timeout at ${s.sim.now.toFixed(1)}s (draw)` });
-      stopLoop(s); broadcast(s); return;
+      drainKeyEvents(s); finalizeRecording(s); stopLoop(s); broadcast(s); return;
     }
     s.sim.tick();
-
-    // 捕获新事件
-    while (s.sim.events.length > prevEventCount.n) {
-      const ev = s.sim.events[prevEventCount.n++]!;
-      s.recentEvents.push(ev);
-      if (s.recentEvents.length > 30) s.recentEvents.shift();
-    }
+    drainKeyEvents(s);
     broadcast(s);
   }, interval);
 }
@@ -400,6 +553,7 @@ const server = createServer((req, res) => {
     const heroMeta = p ? HERO_BY_RACE[p.race] : null;
     if (!p || !heroMeta) { res.writeHead(400).end(JSON.stringify({ ok: false, reason: "no hero for race" })); return; }
     const r = current.sim.hireHero(side, heroMeta.id);
+    if (r.ok) recordCommand(current, side, "hero", { id: heroMeta.id });
     res.writeHead(r.ok ? 200 : 400, { "content-type": "application/json" });
     res.end(JSON.stringify(r));
     return;
@@ -414,6 +568,11 @@ const server = createServer((req, res) => {
     }
     const rate = Number(url.searchParams.get("rate") ?? "1");
     const ok = applySpeed(current, rate);
+    if (ok) {
+      // /speed 在全 AI 局可由观众触发；此时 authSide 为 null，跳过录像
+      const a = authSide(current, req);
+      if (a !== null) recordCommand(current, a, "speed", { rate });
+    }
     res.writeHead(ok ? 200 : 400, { "content-type": "application/json" });
     res.end(JSON.stringify({ ok, speed: current.speed }));
     return;
@@ -427,6 +586,7 @@ const server = createServer((req, res) => {
     const want = wantRaw === null ? true : wantRaw === "true";
     const key = authed === 0 ? "left" : "right";
     current.ready[key] = want;
+    recordCommand(current, authed, "ready", { ready: want });
     if (isAllReady(current)) startLoop(current);
     broadcast(current);
     res.writeHead(200, { "content-type": "application/json" });
@@ -444,8 +604,29 @@ const server = createServer((req, res) => {
     const authed = authSide(current, req);
     if (authed !== side) { res.writeHead(401).end(JSON.stringify({ ok: false, reason: "bad token for this side" })); return; }
     const r = current.sim.manualBuild(side, buildingId, slotIdx);
+    if (r.ok) recordCommand(current, side, "place", { id: buildingId, slot: slotIdx });
     res.writeHead(r.ok ? 200 : 400, { "content-type": "application/json" });
     res.end(JSON.stringify(r));
+    return;
+  }
+
+  if (url.pathname === "/replay/last" && req.method === "GET") {
+    if (!current) { res.writeHead(404).end(JSON.stringify({ ok: false, reason: "no session" })); return; }
+    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify({ ok: true, recording: current.recording }));
+    return;
+  }
+
+  if (url.pathname === "/replay/verify" && req.method === "POST") {
+    if (!current) { res.writeHead(404).end(JSON.stringify({ ok: false, reason: "no session" })); return; }
+    const rec = current.recording;
+    if (!rec.result || !rec.digest) {
+      res.writeHead(400).end(JSON.stringify({ ok: false, reason: "current match not finished" }));
+      return;
+    }
+    const report = replayAndVerify(rec);
+    res.writeHead(200, { "content-type": "application/json; charset=utf-8" });
+    res.end(JSON.stringify(report));
     return;
   }
 

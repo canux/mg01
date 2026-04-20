@@ -73,7 +73,12 @@
               <div class="win-gold"><b id="win-gold-r">0</b>g</div>
             </div>
           </div>
-          <button id="btn-rematch" class="primary">再来一局</button>
+          <div class="win-actions">
+            <button id="btn-rematch" class="primary">再来一局</button>
+            <button id="btn-replay-save" class="secondary" title="下载本局录像 JSON">下载录像</button>
+            <button id="btn-replay-verify" class="secondary" title="服务端重放并比对关键事件 digest">校验回放</button>
+          </div>
+          <div id="replay-status" class="replay-status"></div>
         </div>
       </div>
     </div>

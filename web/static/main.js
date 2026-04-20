@@ -40,7 +40,7 @@ async function joinRoom() {
 
 function connect() {
   if (sse) sse.close();
-  sse = new EventSource("/stream");
+  sse = new EventSource(`/stream?clientId=${encodeURIComponent(mySession.clientId)}`);
   sse.onmessage = (e) => {
     try {
       const state = JSON.parse(e.data);

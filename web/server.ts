@@ -34,17 +34,22 @@ type SideMode = "ai" | "player";
 
 interface SlotHolder { clientId: string; token: string; }
 
+interface Listener { res: ServerResponse; clientId: string | null; }
+
 interface Session {
   sim: BattleSim;
   modes: { left: SideMode; right: SideMode };
   recentEvents: { t: number; kind: string; msg: string }[];
   phase: number;
   timer: NodeJS.Timeout | null;
-  listeners: Set<ServerResponse>;
+  listeners: Set<Listener>;
   speed: number;    // 0 = paused; otherwise 0.5 / 1 / 2 / 4
   slots: { left: SlotHolder | null; right: SlotHolder | null };
   ready: { left: boolean; right: boolean };  // mode==ai → 永远 true
+  disconnectedSince: { left: number | null; right: number | null };  // Date.now() ms
 }
+
+const DISCONNECT_FORFEIT_MS = 10_000;
 
 function isAllReady(s: Session): boolean {
   const l = s.modes.left  === "ai" || s.ready.left;
@@ -86,7 +91,32 @@ function newSim(leftRace: string, rightRace: string, leftMode: SideMode, rightMo
     recentEvents: [], phase: 0, timer: null, listeners: new Set(), speed: 1,
     slots: { left: null, right: null },
     ready: { left: leftMode === "ai", right: rightMode === "ai" },
+    disconnectedSince: { left: null, right: null },
   };
+}
+
+/** 某 slot 的 clientId 是否还有任一活跃 SSE listener */
+function slotIsConnected(s: Session, sideKey: "left" | "right"): boolean {
+  const holder = s.slots[sideKey];
+  if (!holder) return true;    // 无人占 → 视为"连着" (不触发超时)
+  for (const l of s.listeners) if (l.clientId === holder.clientId) return true;
+  return false;
+}
+
+function refreshDisconnectState(s: Session) {
+  const now = Date.now();
+  for (const key of ["left", "right"] as const) {
+    const connected = slotIsConnected(s, key);
+    if (connected) {
+      if (s.disconnectedSince[key] !== null) {
+        s.disconnectedSince[key] = null;
+        s.sim.log({ t: s.sim.now, kind: "end", msg: `${key} reconnected` });
+      }
+    } else if (s.sim.now > 0 && !s.sim.ended && s.disconnectedSince[key] === null) {
+      s.disconnectedSince[key] = now;
+      s.sim.log({ t: s.sim.now, kind: "end", msg: `${key} disconnected — ${DISCONNECT_FORFEIT_MS / 1000}s forfeit timer` });
+    }
+  }
 }
 
 /** 返回 client 在当前 session 的 side（已占 → 返回该 side；否则尝试抢一个 mode=player 的空位；都满 → null 观众） */
@@ -145,6 +175,17 @@ function startLoop(s: Session) {
   const interval = Math.max(10, Math.round(BASE_TICK_INTERVAL_MS / s.speed));
   s.timer = setInterval(() => {
     if (s.sim.ended) { stopLoop(s); broadcast(s); return; }
+    // 断线判负
+    const now = Date.now();
+    for (const key of ["left", "right"] as const) {
+      const ds = s.disconnectedSince[key];
+      if (ds !== null && now - ds > DISCONNECT_FORFEIT_MS) {
+        s.sim.ended = true;
+        s.sim.winner = key === "left" ? Side.Right : Side.Left;
+        s.sim.log({ t: s.sim.now, kind: "end", msg: `${key} forfeit (disconnected > ${DISCONNECT_FORFEIT_MS / 1000}s)` });
+        stopLoop(s); broadcast(s); return;
+      }
+    }
     if (s.sim.now >= balance.rules.maxBattleSec) {
       s.sim.ended = true;
       s.sim.winner = null;
@@ -246,6 +287,11 @@ function snapshot(s: Session) {
       right: { claimed: !!s.slots.right, mode: s.modes.right },
     },
     ready: { left: s.ready.left, right: s.ready.right, all: isAllReady(s) },
+    disconnect: (() => {
+      const now = Date.now();
+      const rem = (ds: number | null) => ds === null ? null : Math.max(0, DISCONNECT_FORFEIT_MS - (now - ds)) / 1000;
+      return { left: rem(s.disconnectedSince.left), right: rem(s.disconnectedSince.right) };
+    })(),
     players,
     buildings: bs,
     units: us,
@@ -257,8 +303,8 @@ function snapshot(s: Session) {
 
 function broadcast(s: Session) {
   const data = `data: ${JSON.stringify(snapshot(s))}\n\n`;
-  for (const res of s.listeners) {
-    try { res.write(data); } catch { /* socket closed */ }
+  for (const l of s.listeners) {
+    try { l.res.write(data); } catch { /* socket closed */ }
   }
 }
 
@@ -296,10 +342,16 @@ const server = createServer((req, res) => {
       "connection": "keep-alive",
       "access-control-allow-origin": "*",
     });
-    current.listeners.add(res);
+    const listener: Listener = { res, clientId: url.searchParams.get("clientId") };
+    current.listeners.add(listener);
+    refreshDisconnectState(current);    // 可能是 reconnect → 清 disconnectedSince
     res.write(`data: ${JSON.stringify(snapshot(current))}\n\n`);
     startLoop(current);
-    req.on("close", () => current?.listeners.delete(res));
+    req.on("close", () => {
+      if (!current) return;
+      current.listeners.delete(listener);
+      refreshDisconnectState(current);
+    });
     return;
   }
 
@@ -326,7 +378,7 @@ const server = createServer((req, res) => {
     const leftMode  = (url.searchParams.get("leftMode")  === "player" ? "player" : "ai") as SideMode;
     const rightMode = (url.searchParams.get("rightMode") === "player" ? "player" : "ai") as SideMode;
     if (current) stopLoop(current);
-    for (const l of current?.listeners ?? []) l.end();
+    for (const l of current?.listeners ?? []) l.res.end();
     const prevSlots = current?.slots ?? { left: null, right: null };
     current = newSim(left, right, leftMode, rightMode);
     // 保留原 slot 占用（同 clientId 新局沿用角色）；但若 mode 变成 ai 则清空

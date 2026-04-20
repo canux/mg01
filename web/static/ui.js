@@ -45,6 +45,7 @@ export class HUD {
       readyL:   document.getElementById("ready-l"),
       readyR:   document.getElementById("ready-r"),
       btnReady: document.getElementById("btn-ready"),
+      dcToast:  document.getElementById("disconnect-toast"),
     };
     this._lastEventT = -1;
     this._lastGold = { 0: null, 1: null };
@@ -138,6 +139,19 @@ export class HUD {
       this.el.btnReady.disabled = false;
       this.el.btnReady.textContent = myRdy ? "取消准备" : "准备";
     }
+  }
+
+  _refreshDisconnect(state) {
+    const dc = state.disconnect;
+    if (!dc || (dc.left === null && dc.right === null) || state.ended) {
+      this.el.dcToast.classList.add("hidden");
+      return;
+    }
+    const lines = [];
+    if (dc.left  !== null) lines.push(`L 断线 ${dc.left.toFixed(1)}s 后判负`);
+    if (dc.right !== null) lines.push(`R 断线 ${dc.right.toFixed(1)}s 后判负`);
+    this.el.dcToast.textContent = lines.join(" · ");
+    this.el.dcToast.classList.remove("hidden");
   }
 
   async _toggleReady(wantReady) {
@@ -255,6 +269,7 @@ export class HUD {
     this._refreshHeroBtn(this.el.heroL, lp?.hero, lp?.gold ?? 0, state.modes?.left  ?? "ai", 0);
     this._refreshHeroBtn(this.el.heroR, rp?.hero, rp?.gold ?? 0, state.modes?.right ?? "ai", 1);
     this._refreshReady(state);
+    this._refreshDisconnect(state);
 
     this.el.timer.textContent    = state.t.toFixed(1) + "s";
     this.el.timerMax.textContent = state.maxT + "s";

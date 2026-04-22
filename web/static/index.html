@@ -20,13 +20,13 @@
         <div class="timer"><span id="timer">0.0s</span> <span class="sep">/</span> <span id="timer-max">300s</span></div>
         <div class="phase" id="phase">Phase 0</div>
         <div class="myside" id="myside">观战</div>
-        <button class="forfeit-btn hidden" id="btn-forfeit" title="认输，结束本局">投降</button>
+        <button class="forfeit-btn hidden" id="btn-forfeit" title="认输，结束本局 (F)">投降</button>
         <div class="speedbar" id="speedbar">
-          <button data-rate="0"   title="暂停">⏸</button>
-          <button data-rate="0.5">0.5x</button>
-          <button data-rate="1" class="active">1x</button>
-          <button data-rate="2">2x</button>
-          <button data-rate="4">4x</button>
+          <button data-rate="0"   title="暂停 (1 / 空格)">⏸</button>
+          <button data-rate="0.5" title="0.5x (2)">0.5x</button>
+          <button data-rate="1" class="active" title="1x (3)">1x</button>
+          <button data-rate="2" title="2x (4)">2x</button>
+          <button data-rate="4" title="4x (5)">4x</button>
         </div>
       </div>
       <div class="side side-right" id="hud-right">
@@ -37,10 +37,10 @@
     </header>
 
     <div id="hero-bar">
-      <button id="hero-left" class="hero-btn left" disabled>
+      <button id="hero-left" class="hero-btn left" disabled title="召唤英雄 (H)">
         <span class="hero-name">—</span><span class="hero-sub">—</span>
       </button>
-      <button id="hero-right" class="hero-btn right" disabled>
+      <button id="hero-right" class="hero-btn right" disabled title="召唤英雄 (H)">
         <span class="hero-name">—</span><span class="hero-sub">—</span>
       </button>
     </div>
@@ -55,7 +55,7 @@
             <span id="ready-l" class="ready-slot left">L · 未准备</span>
             <span id="ready-r" class="ready-slot right">R · 未准备</span>
           </div>
-          <button id="btn-ready" class="primary">准备</button>
+          <button id="btn-ready" class="primary" title="快捷键: R">准备</button>
         </div>
       </div>
       <div id="banner" class="hidden">

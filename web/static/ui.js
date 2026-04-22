@@ -92,6 +92,7 @@ export class HUD {
       this._myReady = !this._myReady;
       this._toggleReady(this._myReady);
     });
+    this._setupHotkeys();
     this.el.logTabs.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-kind]");
       if (!btn) return;
@@ -145,6 +146,47 @@ export class HUD {
     const r = await fetch("/forfeit", { method: "POST", headers: this._authHeaders() })
       .then(r => r.json()).catch(err => ({ ok: false, reason: String(err) }));
     if (!r.ok) console.warn("forfeit failed:", r.reason);
+  }
+
+  /** 桌面键盘快捷键：1-5 切速 / 空格 暂停↔上次速度 / r ready / h 叫英雄 / f 投降 / Esc 关面板 */
+  _setupHotkeys() {
+    this._lastNonZeroRate = 1;
+    document.addEventListener("keydown", (e) => {
+      // 输入态不抢键
+      const t = e.target;
+      if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA")) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const rates = ["0", "0.5", "1", "2", "4"];
+      const key = e.key;
+      if (/^[1-5]$/.test(key)) {
+        const rate = rates[Number(key) - 1];
+        if (rate !== "0") this._lastNonZeroRate = Number(rate);
+        this._applyRate(rate); e.preventDefault(); return;
+      }
+      if (key === " " || e.code === "Space") {
+        const cur = this._lastSeenSpeed ?? 1;
+        this._applyRate(cur > 0 ? "0" : String(this._lastNonZeroRate));
+        e.preventDefault(); return;
+      }
+      if (key === "Escape") { this.closeBuildSheet(); return; }
+      if (key === "r" || key === "R") {
+        if (this._my.side === null) return;
+        this._myReady = !this._myReady; this._toggleReady(this._myReady);
+        e.preventDefault(); return;
+      }
+      if (key === "h" || key === "H") {
+        if (this._my.side === null) return;
+        this._hireHero(this._my.side); e.preventDefault(); return;
+      }
+      if (key === "f" || key === "F") {
+        if (this._my.side === null) return;
+        this._forfeit(); e.preventDefault(); return;
+      }
+    });
+  }
+
+  async _applyRate(rate) {
+    await fetch(`/speed?rate=${rate}`, { method: "POST", headers: this._authHeaders() }).catch(() => {});
   }
 
   _refreshForfeit(state) {
@@ -357,6 +399,8 @@ export class HUD {
 
     // speed bar highlight
     const curSpeed = state.speed ?? 1;
+    this._lastSeenSpeed = curSpeed;
+    if (curSpeed > 0) this._lastNonZeroRate = curSpeed;
     for (const btn of this.el.speedbar.querySelectorAll("button[data-rate]")) {
       const r = Number(btn.getAttribute("data-rate"));
       btn.classList.toggle("active", r === curSpeed);

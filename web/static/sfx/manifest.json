@@ -1,0 +1,21 @@
+{
+  "_doc": "把真实 SFX 文件放到 web/static/sfx/ 下，把对应事件 kind 加进本 JSON 顶层。值是相对 /sfx/ 的路径。文件未提供时静默回落到 audio.js 内置合成器音色，不影响游戏。",
+  "_kinds": ["tap", "build", "hero", "death", "building_down", "castle_down", "phase", "income", "end_win", "end_lose", "end_draw"],
+  "_recommended": {
+    "pack": "Kenney RPG Audio + Interface Sounds（CC0，商用免署名）",
+    "url":  "https://kenney.nl/assets/category:Audio",
+    "examples": {
+      "tap":           "interface/click_001.ogg",
+      "build":         "rpg/handleSmallLeather2.ogg",
+      "hero":          "rpg/metalLatch.ogg",
+      "death":         "rpg/cloth1.ogg",
+      "building_down": "rpg/wood_fall.ogg",
+      "castle_down":   "rpg/explosion_low.ogg",
+      "phase":         "interface/confirmation_001.ogg",
+      "income":        "rpg/coin.ogg",
+      "end_win":       "rpg/jingle_win.ogg",
+      "end_lose":      "rpg/jingle_lose.ogg",
+      "end_draw":      "interface/bong_001.ogg"
+    }
+  }
+}

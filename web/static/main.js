@@ -86,7 +86,7 @@ function setupTap() {
         { method: "POST", headers: authHeaders() }
       ).then(r => r.json()).catch(err => ({ ok: false, reason: String(err) }));
       if (!r.ok) console.warn("place failed:", r.reason);
-      else hapticTap();
+      else { hapticTap(); hud.audio.play("tap"); }
     });
   };
   // 用 pointerdown 覆盖 鼠标 + 触屏 + 触控笔，避免移动端 click 300ms 延迟

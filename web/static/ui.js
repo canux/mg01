@@ -1,5 +1,7 @@
 // HUD / DOM 叠加层：金币、时间、阶段、胜负 banner、日志、种族选择
 
+import { AudioManager } from "./audio.js";
+
 const RACE_NAME_CN = {
   human: "人族", orc: "兽族", undead: "不死族", nightelf: "暗夜精灵",
 };
@@ -71,12 +73,18 @@ export class HUD {
       btnReady: document.getElementById("btn-ready"),
       dcToast:  document.getElementById("disconnect-toast"),
       btnForfeit: document.getElementById("btn-forfeit"),
+      btnMute:   document.getElementById("btn-mute"),
     };
     this._lastEventT = -1;
     this._lastGold = { 0: null, 1: null };
     this._buildingsByRace = new Map();   // race -> array (cached)
     this._my = { clientId: null, side: null, token: null };
     this._authHeaders = () => ({});
+    this.audio = new AudioManager();
+    // iOS/Android 首次手势内解锁
+    const unlockOnce = () => { this.audio.unlock(); this.audio.loadManifest("/sfx/manifest.json"); };
+    document.addEventListener("pointerdown", unlockOnce, { once: true, capture: true });
+    document.addEventListener("keydown",     unlockOnce, { once: true, capture: true });
     this.el.sheetClose.addEventListener("click", () => this.closeBuildSheet());
     this.el.speedbar.addEventListener("click", async (e) => {
       const btn = e.target.closest("button[data-rate]");
@@ -87,6 +95,11 @@ export class HUD {
     this.el.heroL.addEventListener("click", () => this._hireHero(0));
     this.el.heroR.addEventListener("click", () => this._hireHero(1));
     this.el.btnForfeit.addEventListener("click", () => this._forfeit());
+    this._refreshMuteBtn();
+    this.el.btnMute.addEventListener("click", () => {
+      this.audio.toggleMuted();
+      this._refreshMuteBtn();
+    });
     this._myReady = false;
     this.el.btnReady.addEventListener("click", () => {
       this._myReady = !this._myReady;
@@ -138,7 +151,7 @@ export class HUD {
     const r = await fetch(`/hero?side=${side}`, { method: "POST", headers: this._authHeaders() })
       .then(r => r.json()).catch(err => ({ ok: false, reason: String(err) }));
     if (!r.ok) console.warn("hero hire failed:", r.reason);
-    else hapticTap();
+    else { hapticTap(); this.audio.play("tap"); }
   }
 
   async _forfeit() {
@@ -182,11 +195,19 @@ export class HUD {
         if (this._my.side === null) return;
         this._forfeit(); e.preventDefault(); return;
       }
+      if (key === "m" || key === "M") {
+        this.audio.toggleMuted(); this._refreshMuteBtn();
+        e.preventDefault(); return;
+      }
     });
   }
 
   async _applyRate(rate) {
     await fetch(`/speed?rate=${rate}`, { method: "POST", headers: this._authHeaders() }).catch(() => {});
+  }
+
+  _refreshMuteBtn() {
+    this.el.btnMute.textContent = this.audio.muted ? "🔇" : "🔊";
   }
 
   _refreshForfeit(state) {
@@ -196,10 +217,17 @@ export class HUD {
     this.el.btnForfeit.classList.toggle("hidden", !canShow);
   }
 
-  /** 胜负状态首次变为 ended → 触发触感反馈。每次 state.ended 从 false 变 true 触发一次。 */
+  /** 胜负状态首次变为 ended → 触发触感反馈 + 音效。每次 state.ended 从 false 变 true 触发一次。 */
   _detectMatchEnd(state) {
     const now = !!state.ended;
-    if (now && !this._endedBefore) hapticLong();
+    if (now && !this._endedBefore) {
+      hapticLong();
+      const my = this._my.side;
+      const sfx = state.winner === null ? "end_draw"
+                : my === null            ? "end_win"            // 观战默认胜利音
+                : state.winner === my    ? "end_win" : "end_lose";
+      this.audio.play(sfx);
+    }
     this._endedBefore = now;
   }
 
@@ -442,6 +470,12 @@ export class HUD {
       this.el.log.prepend(li);
       while (this.el.log.childElementCount > 40) {
         this.el.log.removeChild(this.el.log.lastElementChild);
+      }
+      // 音效：白名单 kind 触发，attack/spawn/projectile 太密不发声
+      if (ev.kind === "build" || ev.kind === "hero" || ev.kind === "death"
+       || ev.kind === "building_down" || ev.kind === "castle_down"
+       || ev.kind === "phase") {
+        this.audio.play(ev.kind);
       }
     }
   }

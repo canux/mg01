@@ -477,6 +477,9 @@ const MIME: Record<string, string> = {
   ".css":  "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".svg":  "image/svg+xml",
+  ".wav":  "audio/wav",
+  ".ogg":  "audio/ogg",
+  ".mp3":  "audio/mpeg",
 };
 
 function serveStatic(req: IncomingMessage, res: ServerResponse, urlPath: string) {

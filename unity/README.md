@@ -1,40 +1,59 @@
-# mg01 Unity 移植脚手架
+# mg01 Unity（WebGL Build）
 
-War3《Castle Fight》Q 版手游的 Unity 项目骨架。
-TS `engine/src/*` 是权威实现；Unity 侧逐文件对应翻译，便于双端比对。
+War3《Castle Fight》Q 版 Unity 端。同 sim 与 `engine/src/*.ts` 1:1。
 
-## 当前进度
+## 一行命令出 H5（WebGL）包
 
-| 模块 | TS 来源 | Unity 路径 | 状态 |
-|---|---|---|---|
-| Core (Enums) | `engine/src/Enums.ts` | `Assets/Mg01/Core/Enums.cs` | ✅ |
-| DamageCalc | `engine/src/DamageCalc.ts` | `Assets/Mg01/Core/DamageCalc.cs` | ✅ |
-| DamageMatrix | `data/damage_matrix.json` | `Assets/Mg01/Core/DamageMatrix.cs` | ✅ 硬编码 + Override() 支持 JSON 覆盖 |
-| Vec2 | `engine/src/Vec2.ts` | `Assets/Mg01/Core/Vec2Ext.cs` | ✅ UnityEngine.Vector2 + 扩展 |
-| Templates DTO | `engine/src/Templates.ts` | `Assets/Mg01/Templates/Templates.cs` | ✅ [Serializable] DTO |
-| JSON Loader | `engine/src/DataLoader.ts` | `Assets/Mg01/Loaders/JsonLoader.cs` | ✅ JsonUtility 版 (matrix 需 Newtonsoft) |
-| Unit / Building / Projectile | `engine/src/{Unit,Building,Projectile}.ts` | `Assets/Mg01/Sim/*.cs` | ✅ 完整移植 (MonoBehaviour) |
-| Buff / UnitMods | `engine/src/SpellEngine.ts` | `Assets/Mg01/Sim/Buff.cs` | ✅ |
-| Player | `engine/src/Player.ts` | `Assets/Mg01/Sim/Player.cs` | ✅ |
-| BattleSim 主循环 | `engine/src/BattleSim.ts` | `Assets/Mg01/Sim/BattleSim.cs` | ✅ 完整 Tick*（阶段 / 经济 / 出兵 / 自卫 / 投射物 / 法术 / AI） |
-| Strategy | `engine/src/Strategy.ts` | `Assets/Mg01/Sim/Strategy.cs` | ✅ BuildOrder + MixedComposition + DoNothing |
-| SpellEngine | `engine/src/SpellEngine.ts` | `Assets/Mg01/Sim/SpellEngine.cs` | ✅ 4 MVP 法术 (heal / bloodlust / faerieFire / frostNova) |
+```bash
+# 0. 装 Unity Hub + 2022.3.40f1 + WebGL Build Support 模块（首次需要）
+# 1. 在仓库根执行：
+"<Unity 安装路径>/Unity" -batchmode -nographics \
+  -projectPath ./unity \
+  -executeMethod Mg01.Editor.BuildScript.BuildWebGL \
+  -quit -logFile -
 
-## 用法
+# 2. 包出现在 unity/Builds/WebGL/，扔任意静态 host 即可（GitHub Pages / Vercel / OSS / 微信公众号 H5）
+```
 
-1. Unity 2022 LTS 起，`File > Open Project` 选 `unity/` 目录
-2. `Assets/Mg01/Core/Mg01.Core.asmdef` 会自动生成程序集
-3. C# 端命名空间统一 `Mg01.Core`
+或在 Editor 里：菜单 `mg01 → Build WebGL`。
 
-## 翻译约定
+## 项目结构
 
-- TS 类 `Vec2` → 直接用 `UnityEngine.Vector2`（成员函数对应：`add`→`+`, `mul`→`*`, `len`→`.magnitude`, `lenSq`→`.sqrMagnitude`, `normalize`→`.normalized`）
-- TS `Side.Left = 0` → C# `enum Side { Left = 0 }`
-- TS lowercase 字符串枚举值（"normal"/"pierce"/...）→ JSON 互通时用 `EnumNames.ToJson` / `Parse*`
-- 时间单位：秒；距离：像素 / War3 距离（1 tile = 128，与 TS 一致）
+```
+unity/
+├── Assets/
+│   ├── Mg01/
+│   │   ├── Core/        ← TS engine/src/{Enums,DamageCalc,DamageMatrix,Vec2}.ts
+│   │   ├── Sim/         ← TS engine/src/{BattleSim,Unit,Building,Player,Strategy,SpellEngine}.ts
+│   │   ├── Templates/   ← DTOs (matches data/*.json)
+│   │   ├── Loaders/     ← JsonLoader (Resources + 项目根 ../data 双路径)
+│   │   ├── Runtime/     ← Unity 表现层（GameRoot 自举，无需手动拖关系）
+│   │   │   ├── Boot/    ← GameRoot, StrategyFactory
+│   │   │   ├── View/    ← BoardRenderer, ProceduralSprite (灰盒)
+│   │   │   ├── UI/      ← HudController (TMP)
+│   │   │   ├── Input/   ← SlotInput (鼠标/触屏点击 → ManualBuild)
+│   │   │   └── Audio/   ← AudioBridge (Resources/sfx/*)
+│   │   └── Editor/      ← BuildScript (一键 WebGL build + Setup Scene)
+│   └── Resources/
+│       ├── data/        ← 11 个 JSON（balance/units_*/buildings/spells/races/damage_matrix）
+│       └── sfx/         ← 11 个 Kenney CC0 音效（与 web/static/sfx/kenney 同源）
+├── Packages/manifest.json
+└── ProjectSettings/     ← 主要：ProjectVersion(2022.3.40f1) + WebGL 设置
+```
 
-## 测试
+## 灰盒美术
 
-后续 B3 完成后，提供 `EditMode` 下的 NUnit 测试：
-- 跑 `damage-test.ts` 同样的 12 条断言（C# 复用 `data/damage_matrix.json`）
-- 跑 `duel.ts` 同 8 组对决，验收双端结果对齐（容差 ±5%）
+为了避免拖 PNG/SVG 资源管线，单位/建筑用 `ProceduralSprite.Solid()` 运行时生成的纯色矩形：种族色取自 `races.json`，右侧偏暗 25% 区分阵营。后续替换成真实 sprite 时只动 `BoardRenderer.MakeBox()`。
+
+## 与 web 端的关系
+
+- **数据完全共享**：`data/*.json` 直接拷贝到 `Resources/data/`
+- **音效完全共享**：`web/static/sfx/kenney/*` 直接拷贝到 `Resources/sfx/`
+- **sim 完全等价**：1:1 移植，相同 build queue 应产生相同事件序列
+
+## 已知限制（C-1）
+
+- 单机 AI vs AI（无联机），录像功能尚未移植
+- 单玩家手玩仅支持 Left；右侧固定 AI
+- 灰盒美术；无 sprite/动画
+- 简易 SlotInput：tap 槽位 → 自动出当前 race 最便宜兵营。"开建造面板" 留待 C-2

@@ -82,13 +82,25 @@ namespace Mg01.Loaders
 
         private static T Read<T>(string fileName)
         {
-            var path = Path.Combine(DataDir, fileName);
-            if (!File.Exists(path))
+            // 1) WebGL / 打包后：从 Resources/data/ 加载（无 .json 后缀）
+            var key = "data/" + System.IO.Path.GetFileNameWithoutExtension(fileName);
+            var ta = Resources.Load<TextAsset>(key);
+            string json = ta?.text;
+            // 2) Editor 期：直接读项目根 data/ 目录（WebGL 下 File 不可用，try/catch 保命）
+            if (json == null)
             {
-                Debug.LogWarning($"[JsonLoader] missing: {path}");
+                try
+                {
+                    var path = Path.Combine(DataDir, fileName);
+                    if (File.Exists(path)) json = File.ReadAllText(path);
+                }
+                catch { /* WebGL / 沙盒环境下 File API 不可用，忽略 */ }
+            }
+            if (string.IsNullOrEmpty(json))
+            {
+                Debug.LogWarning($"[JsonLoader] missing: Resources/{key} and {Path.Combine(DataDir, fileName)}");
                 return default;
             }
-            var json = File.ReadAllText(path);
             try
             {
                 // JsonUtility 不支持顶层数组；包一层 wrapper 类即可

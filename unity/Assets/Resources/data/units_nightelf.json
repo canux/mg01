@@ -1,0 +1,163 @@
+{
+  "_doc": "暗夜精灵 7 单位",
+  "units": [
+    {
+      "id": "ne_archer",
+      "race": "nightelf",
+      "nameCn": "弓箭手",
+      "nameEn": "Archer",
+      "role": "range",
+      "cost": 130,
+      "hp": 245,
+      "attack": { "damage": 17, "damageType": "pierce", "range": 500, "speed": 1.60, "attackPoint": 0.50, "attackBackswing": 0.60 },
+      "defense": { "armor": 0, "armorType": "medium" },
+      "movement": { "speed": 270, "turnRate": 0.6, "collisionRadius": 31 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["elune"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.77, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.60, "events": [ { "time": 0.50, "name": "LaunchProjectile" } ] },
+        "death": { "clip": "Death", "duration": 2.00, "events": [ { "time": 1.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "ne_archer"
+    },
+    {
+      "id": "ne_huntress",
+      "race": "nightelf",
+      "nameCn": "女猎手",
+      "nameEn": "Huntress",
+      "role": "step",
+      "cost": 195,
+      "hp": 560,
+      "attack": { "damage": 20, "damageType": "normal", "range": 90, "speed": 2.00, "attackPoint": 0.60, "attackBackswing": 0.70, "bounce": { "count": 2, "falloff": 0.5 } },
+      "defense": { "armor": 1, "armorType": "medium" },
+      "movement": { "speed": 350, "turnRate": 0.6, "collisionRadius": 48 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["sentinel", "senseOfDanger"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 1.83, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.67, "loop": true },
+        "attack": { "clip": "Attack", "duration": 2.00, "events": [ { "time": 0.60, "name": "LaunchBounceBlade" } ] },
+        "death": { "clip": "Death", "duration": 2.20, "events": [ { "time": 2.15, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "ne_huntress"
+    },
+    {
+      "id": "ne_druidbear",
+      "race": "nightelf",
+      "nameCn": "熊德鲁伊",
+      "nameEn": "Druid of the Claw (Bear)",
+      "role": "heavy",
+      "cost": 255,
+      "hp": 950,
+      "manaMax": 300,
+      "manaRegen": 1.5,
+      "attack": { "damage": 31, "damageType": "normal", "range": 100, "speed": 1.80, "attackPoint": 0.55, "attackBackswing": 0.70 },
+      "defense": { "armor": 2, "armorType": "heavy" },
+      "movement": { "speed": 270, "turnRate": 0.5, "collisionRadius": 48 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["roar", "rejuvenation", "bearForm"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.33, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.83, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.80, "events": [ { "time": 0.55, "name": "DealDamage" } ] },
+        "spell": { "clip": "Spell", "duration": 1.50, "events": [ { "time": 0.75, "name": "CastSpell" } ] },
+        "morph": { "clip": "Morph", "duration": 2.50, "events": [ { "time": 2.50, "name": "FormSwitch" } ] },
+        "death": { "clip": "Death", "duration": 2.50, "events": [ { "time": 2.45, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "ne_druidbear"
+    },
+    {
+      "id": "ne_glaive",
+      "race": "nightelf",
+      "nameCn": "投刃车",
+      "nameEn": "Glaive Thrower",
+      "role": "siege",
+      "cost": 210,
+      "hp": 400,
+      "attack": { "damage": 57, "damageType": "siege", "range": 1400, "speed": 3.00, "attackPoint": 0.85, "attackBackswing": 1.00 },
+      "defense": { "armor": 2, "armorType": "fortified" },
+      "movement": { "speed": 220, "turnRate": 0.3, "collisionRadius": 56 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["vorpalBlades"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 1.00, "loop": true },
+        "attack": { "clip": "Attack", "duration": 3.00, "events": [ { "time": 0.85, "name": "LaunchProjectile" } ] },
+        "death": { "clip": "Death", "duration": 2.00, "events": [ { "time": 1.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "ne_glaive"
+    },
+    {
+      "id": "ne_chimera",
+      "race": "nightelf",
+      "nameCn": "奇美拉",
+      "nameEn": "Chimaera",
+      "role": "flying",
+      "cost": 330,
+      "hp": 1050,
+      "attack": { "damage": 60, "damageType": "magic", "range": 400, "speed": 2.30, "attackPoint": 0.60, "attackBackswing": 0.80 },
+      "defense": { "armor": 4, "armorType": "heavy" },
+      "movement": { "speed": 300, "turnRate": 0.4, "collisionRadius": 64, "fly": true },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["corrosiveBreath"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.83, "loop": true },
+        "attack": { "clip": "Attack", "duration": 2.30, "events": [ { "time": 0.60, "name": "LaunchProjectile" } ] },
+        "death": { "clip": "Death", "duration": 3.00, "events": [ { "time": 2.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "ne_chimera"
+    },
+    {
+      "id": "ne_druidtalon",
+      "race": "nightelf",
+      "nameCn": "乌鸦德鲁伊",
+      "nameEn": "Druid of the Talon",
+      "role": "caster",
+      "cost": 165,
+      "hp": 275,
+      "manaMax": 200,
+      "manaRegen": 1.0,
+      "attack": { "damage": 14, "damageType": "magic", "range": 600, "speed": 1.70, "attackPoint": 0.50, "attackBackswing": 0.60 },
+      "defense": { "armor": 0, "armorType": "unarmored" },
+      "movement": { "speed": 270, "turnRate": 0.6, "collisionRadius": 31 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["faerieFire", "cyclone", "ravenForm"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 1.00, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.70, "events": [ { "time": 0.50, "name": "LaunchProjectile" } ] },
+        "spell": { "clip": "Spell", "duration": 1.80, "events": [ { "time": 0.90, "name": "CastSpell" } ] },
+        "morph": { "clip": "Morph", "duration": 2.00, "events": [ { "time": 2.00, "name": "FormSwitch" } ] },
+        "death": { "clip": "Death", "duration": 2.00, "events": [ { "time": 1.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "ne_druidtalon"
+    },
+    {
+      "id": "ne_keeper",
+      "race": "nightelf",
+      "nameCn": "丛林守护者",
+      "nameEn": "Keeper of the Grove",
+      "role": "legendary",
+      "cost": 1200,
+      "hp": 2050,
+      "manaMax": 650,
+      "manaRegen": 2.3,
+      "attack": { "damage": 56, "damageType": "hero", "range": 600, "speed": 1.80, "attackPoint": 0.55, "attackBackswing": 0.65 },
+      "defense": { "armor": 4, "armorType": "hero" },
+      "movement": { "speed": 320, "turnRate": 0.5, "collisionRadius": 36 },
+      "vision": { "day": 1800, "night": 800 },
+      "abilities": ["entangle", "forceOfNature", "thornsAura", "tranquility"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.83, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.80, "events": [ { "time": 0.55, "name": "LaunchProjectile" } ] },
+        "spell": { "clip": "Spell", "duration": 2.00, "events": [ { "time": 1.00, "name": "CastSpell" } ] },
+        "death": { "clip": "Death", "duration": 3.00, "events": [ { "time": 2.95, "name": "BeginDissipate" } ] }
+      },
+      "assetKey": "ne_keeper"
+    }
+  ]
+}

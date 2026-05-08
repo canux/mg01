@@ -1,0 +1,26 @@
+{
+  "_doc": "主动技能。caster 类单位周期性从这里选择使用。范围施法单位按 castPoint 触发效果",
+  "spells": [
+    { "id": "heal",           "nameCn": "治疗术",     "manaCost": 5,  "cooldownSec": 0,   "castPoint": 0.5, "target": "ally",       "range": 600, "effect": { "type": "heal",       "amount": 25 } },
+    { "id": "innerFire",      "nameCn": "心灵之火",   "manaCost": 35, "cooldownSec": 0,   "castPoint": 0.5, "target": "ally",       "range": 600, "effect": { "type": "buff",       "durationSec": 60, "armor": 5, "damagePct": 0.10 } },
+    { "id": "dispelMagic",    "nameCn": "驱散魔法",   "manaCost": 75, "cooldownSec": 0,   "castPoint": 0.5, "target": "area",       "range": 800, "effect": { "type": "dispel",     "radius": 200 } },
+
+    { "id": "purge",          "nameCn": "净化",       "manaCost": 75, "cooldownSec": 0,   "castPoint": 0.5, "target": "enemy",      "range": 600, "effect": { "type": "slow",       "durationSec": 5,  "movePct": 0.50, "magicDmg": 99 } },
+    { "id": "bloodlust",      "nameCn": "嗜血术",     "manaCost": 50, "cooldownSec": 0,   "castPoint": 0.5, "target": "ally",       "range": 600, "effect": { "type": "buff",       "durationSec": 60, "attackSpeedPct": 0.40, "moveSpeedPct": 0.25 } },
+    { "id": "lightningShield","nameCn": "闪电护盾",   "manaCost": 75, "cooldownSec": 0,   "castPoint": 0.5, "target": "enemy",      "range": 600, "effect": { "type": "dotAura",    "durationSec": 5,  "dpsMagic": 20, "radius": 180 } },
+
+    { "id": "raiseDead",      "nameCn": "亡者复生",   "manaCost": 75, "cooldownSec": 30,  "castPoint": 0.8, "target": "corpse",     "range": 600, "effect": { "type": "summon",     "unitId": "ud_skeleton", "count": 2, "durationSec": 60 } },
+    { "id": "unholyFrenzy",   "nameCn": "邪恶狂热",   "manaCost": 50, "cooldownSec": 0,   "castPoint": 0.5, "target": "ally",       "range": 600, "effect": { "type": "buff",       "durationSec": 40, "attackSpeedPct": 0.75, "selfDpsPct": 0.05 } },
+    { "id": "cripple",        "nameCn": "残废术",     "manaCost": 125,"cooldownSec": 0,   "castPoint": 0.5, "target": "enemy",      "range": 600, "effect": { "type": "debuff",    "durationSec": 60, "attackSpeedPct": -0.50, "damagePct": -0.50, "moveSpeedPct": -0.50 } },
+
+    { "id": "faerieFire",     "nameCn": "精灵之火",   "manaCost": 50, "cooldownSec": 0,   "castPoint": 0.5, "target": "enemy",      "range": 800, "effect": { "type": "debuff",    "durationSec": 120,"armorFlat": -3 } },
+    { "id": "cyclone",        "nameCn": "风暴之锤",   "manaCost": 100,"cooldownSec": 0,   "castPoint": 0.5, "target": "enemy",      "range": 800, "effect": { "type": "stun",      "durationSec": 6 } },
+    { "id": "roar",           "nameCn": "战吼",       "manaCost": 75, "cooldownSec": 15,  "castPoint": 0.5, "target": "area",       "range": 0,   "effect": { "type": "buff",       "durationSec": 45, "damagePct": 0.25, "radius": 900 } },
+    { "id": "rejuvenation",   "nameCn": "回春术",     "manaCost": 65, "cooldownSec": 0,   "castPoint": 0.5, "target": "ally",       "range": 600, "effect": { "type": "hot",        "durationSec": 12, "totalHeal": 400 } },
+
+    { "id": "frostNova",      "nameCn": "霜星",       "manaCost": 100,"cooldownSec": 8,   "castPoint": 0.7, "target": "enemy",      "range": 700, "effect": { "type": "nova",      "dmgMagic": 100, "slowPct": 0.50, "slowSec": 5, "radius": 200 } },
+    { "id": "blizzard",       "nameCn": "暴风雪",     "manaCost": 75, "cooldownSec": 8,   "castPoint": 0.5, "target": "area",       "range": 800, "effect": { "type": "channel",   "tickCount": 8, "tickIntervalSec": 1.0, "tickDamage": 50, "radius": 200, "dmgType": "magic" } },
+    { "id": "entangle",       "nameCn": "缠绕",       "manaCost": 75, "cooldownSec": 10,  "castPoint": 0.5, "target": "enemy",      "range": 800, "effect": { "type": "root",      "durationSec": 5, "dpsNature": 15 } },
+    { "id": "forceOfNature",  "nameCn": "自然之力",   "manaCost": 125,"cooldownSec": 40,  "castPoint": 1.0, "target": "self",       "range": 0,   "effect": { "type": "summon",    "unitId": "ne_treant", "count": 2, "durationSec": 60 } }
+  ]
+}

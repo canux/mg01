@@ -1,0 +1,24 @@
+name: Request Unity License (.alf)
+
+# 一次性手动跑：生成 .alf 文件 → 你下载它，去 id.unity.com 换 .ulf 文件 → 把 .ulf 内容粘到
+# Settings → Secrets → Actions → New repository secret → name: UNITY_LICENSE
+# 详细步骤见 .github/CI_SETUP.md
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  request:
+    name: Generate Unity_v2022.x.alf
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: game-ci/unity-request-activation-file@v2
+        id: act
+        with:
+          unityVersion: 2022.3.40f1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.act.outputs.filePath }}
+          path: ${{ steps.act.outputs.filePath }}
+          retention-days: 7

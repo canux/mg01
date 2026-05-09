@@ -2,7 +2,12 @@
 
 War3《Castle Fight》Q 版 Unity 端。同 sim 与 `engine/src/*.ts` 1:1。
 
-## 一行命令出 H5（WebGL）包
+## 出 H5 包，挑一种
+
+### A. 完全不装 Unity，CI 代劳（**最省事**）
+按 [`.github/CI_SETUP.md`](../.github/CI_SETUP.md) 一次性配 3 个 Secret，之后 push 自动出包到 GitHub Actions Artifacts，main 分支自动发布到 GitHub Pages。
+
+### B. 本地 Unity 命令行
 
 ```bash
 # 0. 装 Unity Hub + 2022.3.40f1 + WebGL Build Support 模块（首次需要）

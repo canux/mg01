@@ -1,0 +1,10 @@
+All audio files in kenney/ are sourced from Kenney (https://kenney.nl/),
+licensed under Creative Commons CC0 1.0 Universal (Public Domain).
+No attribution is required for commercial or non-commercial use.
+
+Original packs:
+- Interface Sounds (https://kenney.nl/assets/interface-sounds)
+- RPG Audio        (https://kenney.nl/assets/rpg-audio)
+- Impact Sounds    (https://kenney.nl/assets/impact-sounds)
+
+CC0 1.0 Universal: https://creativecommons.org/publicdomain/zero/1.0/legalcode

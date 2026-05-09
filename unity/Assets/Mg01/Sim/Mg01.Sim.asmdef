@@ -1,0 +1,14 @@
+{
+  "name": "Mg01.Sim",
+  "rootNamespace": "Mg01.Sim",
+  "references": ["Mg01.Core", "Mg01.Templates"],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

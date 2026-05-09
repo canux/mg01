@@ -1,0 +1,158 @@
+{
+  "_doc": "人族 7 单位。数值参考 War3 同名兵种，略有简化。attackPoint/Backswing 为 Unity 动画事件关键帧 (秒)",
+  "units": [
+    {
+      "id": "human_footman",
+      "race": "human",
+      "nameCn": "步兵",
+      "nameEn": "Footman",
+      "role": "step",
+      "cost": 75,
+      "hp": 420,
+      "attack": { "damage": 12, "damageType": "normal", "range": 90, "speed": 1.35, "attackPoint": 0.40, "attackBackswing": 0.50 },
+      "defense": { "armor": 2, "armorType": "heavy" },
+      "movement": { "speed": 270, "turnRate": 0.6, "collisionRadius": 31 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["defend"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 1.83, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.83, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.35, "events": [ { "time": 0.40, "name": "DealDamage" }, { "time": 0.55, "name": "SwingSfx" } ] },
+        "death": { "clip": "Death", "duration": 1.85, "events": [ { "time": 1.80, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "human_footman"
+    },
+    {
+      "id": "human_rifleman",
+      "race": "human",
+      "nameCn": "火枪手",
+      "nameEn": "Rifleman",
+      "role": "range",
+      "cost": 205,
+      "hp": 505,
+      "attack": { "damage": 21, "damageType": "pierce", "range": 500, "speed": 1.50, "attackPoint": 0.45, "attackBackswing": 0.55 },
+      "defense": { "armor": 0, "armorType": "medium" },
+      "movement": { "speed": 270, "turnRate": 0.6, "collisionRadius": 31 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["longRifles"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.77, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.50, "events": [ { "time": 0.45, "name": "LaunchProjectile" }, { "time": 0.50, "name": "GunshotSfx" } ] },
+        "death": { "clip": "Death", "duration": 2.00, "events": [ { "time": 1.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "human_rifleman"
+    },
+    {
+      "id": "human_knight",
+      "race": "human",
+      "nameCn": "骑士",
+      "nameEn": "Knight",
+      "role": "heavy",
+      "cost": 245,
+      "hp": 835,
+      "attack": { "damage": 34, "damageType": "normal", "range": 90, "speed": 1.60, "attackPoint": 0.50, "attackBackswing": 0.60 },
+      "defense": { "armor": 5, "armorType": "heavy" },
+      "movement": { "speed": 350, "turnRate": 0.5, "collisionRadius": 48 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["animalWarTraining"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 1.50, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.60, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.60, "events": [ { "time": 0.50, "name": "DealDamage" }, { "time": 0.70, "name": "SwingSfx" } ] },
+        "death": { "clip": "Death", "duration": 2.20, "events": [ { "time": 2.15, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "human_knight"
+    },
+    {
+      "id": "human_mortar",
+      "race": "human",
+      "nameCn": "迫击炮小队",
+      "nameEn": "Mortar Team",
+      "role": "siege",
+      "cost": 180,
+      "hp": 360,
+      "attack": { "damage": 42, "damageType": "siege", "range": 900, "speed": 2.40, "attackPoint": 0.80, "attackBackswing": 1.00, "aoeRadius": 150 },
+      "defense": { "armor": 0, "armorType": "unarmored" },
+      "movement": { "speed": 220, "turnRate": 0.3, "collisionRadius": 40 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["flare"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 1.00, "loop": true },
+        "attack": { "clip": "Attack", "duration": 2.40, "events": [ { "time": 0.80, "name": "LaunchProjectile" }, { "time": 0.85, "name": "CannonSfx" } ] },
+        "death": { "clip": "Death", "duration": 2.00, "events": [ { "time": 1.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "human_mortar"
+    },
+    {
+      "id": "human_gryphon",
+      "race": "human",
+      "nameCn": "狮鹫骑士",
+      "nameEn": "Gryphon Rider",
+      "role": "flying",
+      "cost": 280,
+      "hp": 875,
+      "attack": { "damage": 48, "damageType": "magic", "range": 400, "speed": 1.80, "attackPoint": 0.50, "attackBackswing": 0.60 },
+      "defense": { "armor": 2, "armorType": "heavy" },
+      "movement": { "speed": 350, "turnRate": 0.8, "collisionRadius": 48, "fly": true },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["stormHammers"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 1.67, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 0.83, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.80, "events": [ { "time": 0.50, "name": "LaunchProjectile" } ] },
+        "death": { "clip": "Death", "duration": 2.50, "events": [ { "time": 2.45, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "human_gryphon"
+    },
+    {
+      "id": "human_priest",
+      "race": "human",
+      "nameCn": "牧师",
+      "nameEn": "Priest",
+      "role": "caster",
+      "cost": 135,
+      "hp": 290,
+      "manaMax": 200,
+      "manaRegen": 1.0,
+      "attack": { "damage": 10, "damageType": "magic", "range": 600, "speed": 1.60, "attackPoint": 0.50, "attackBackswing": 0.60 },
+      "defense": { "armor": 0, "armorType": "unarmored" },
+      "movement": { "speed": 270, "turnRate": 0.6, "collisionRadius": 31 },
+      "vision": { "day": 1400, "night": 800 },
+      "abilities": ["heal", "innerFire", "dispelMagic"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 1.00, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.60, "events": [ { "time": 0.50, "name": "LaunchProjectile" } ] },
+        "spell": { "clip": "Spell", "duration": 1.50, "events": [ { "time": 0.67, "name": "CastSpell" } ] },
+        "death": { "clip": "Death", "duration": 2.00, "events": [ { "time": 1.95, "name": "BeginDecay" } ] }
+      },
+      "assetKey": "human_priest"
+    },
+    {
+      "id": "human_archmage",
+      "race": "human",
+      "nameCn": "大法师",
+      "nameEn": "Archmage",
+      "role": "legendary",
+      "cost": 1200,
+      "hp": 1950,
+      "manaMax": 700,
+      "manaRegen": 2.5,
+      "attack": { "damage": 58, "damageType": "hero", "range": 600, "speed": 1.80, "attackPoint": 0.55, "attackBackswing": 0.65 },
+      "defense": { "armor": 5, "armorType": "hero" },
+      "movement": { "speed": 320, "turnRate": 0.5, "collisionRadius": 36 },
+      "vision": { "day": 1800, "night": 800 },
+      "abilities": ["blizzard", "waterElemental", "brilliance", "massTeleport"],
+      "animation": {
+        "stand": { "clip": "Stand", "duration": 2.00, "loop": true },
+        "walk":  { "clip": "Walk", "duration": 1.00, "loop": true },
+        "attack": { "clip": "Attack", "duration": 1.80, "events": [ { "time": 0.55, "name": "LaunchProjectile" } ] },
+        "spell": { "clip": "Spell", "duration": 2.00, "events": [ { "time": 1.00, "name": "CastSpell" } ] },
+        "death": { "clip": "Death", "duration": 3.00, "events": [ { "time": 2.95, "name": "BeginDissipate" } ] }
+      },
+      "assetKey": "human_archmage"
+    }
+  ]
+}

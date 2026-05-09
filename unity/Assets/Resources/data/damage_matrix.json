@@ -1,0 +1,13 @@
+{
+  "_doc": "War3 经典伤害-护甲矩阵。值为伤害倍率。行=攻击类型, 列=护甲类型",
+  "attackTypes":  ["normal", "pierce", "magic", "siege", "chaos", "hero"],
+  "armorTypes":   ["unarmored", "light", "medium", "heavy", "fortified", "hero", "divine"],
+  "matrix": {
+    "normal": { "unarmored": 1.00, "light": 1.00, "medium": 1.50, "heavy": 1.00, "fortified": 0.55, "hero": 1.00, "divine": 0.05 },
+    "pierce": { "unarmored": 1.50, "light": 2.00, "medium": 0.75, "heavy": 1.25, "fortified": 0.50, "hero": 0.50, "divine": 0.05 },
+    "magic":  { "unarmored": 1.00, "light": 1.50, "medium": 0.75, "heavy": 2.25, "fortified": 0.35, "hero": 0.50, "divine": 0.05 },
+    "siege":  { "unarmored": 1.00, "light": 1.00, "medium": 0.50, "heavy": 1.00, "fortified": 1.50, "hero": 0.50, "divine": 0.05 },
+    "chaos":  { "unarmored": 1.00, "light": 1.00, "medium": 1.00, "heavy": 1.00, "fortified": 1.00, "hero": 1.00, "divine": 1.00 },
+    "hero":   { "unarmored": 1.00, "light": 1.00, "medium": 1.00, "heavy": 1.00, "fortified": 0.50, "hero": 1.00, "divine": 0.50 }
+  }
+}

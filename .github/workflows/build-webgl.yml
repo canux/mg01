@@ -1,0 +1,87 @@
+name: Build WebGL (Unity)
+
+# 推 unity/ 改动 → 自动 headless build → 工件 + Pages 部署
+# 首次跑前请按 .github/CI_SETUP.md 配好 UNITY_LICENSE / UNITY_EMAIL / UNITY_PASSWORD 三个 Secret
+
+on:
+  push:
+    branches: [main, "claude/**"]
+    paths:
+      - "unity/**"
+      - "data/**"
+      - ".github/workflows/build-webgl.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build WebGL
+    runs-on: ubuntu-latest
+    outputs:
+      build-size: ${{ steps.size.outputs.bytes }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { lfs: false }
+
+      # 用 hash 区分 cache key，避免误命中
+      - name: Cache Library/
+        uses: actions/cache@v4
+        with:
+          path: unity/Library
+          key:  Library-mg01-${{ hashFiles('unity/Packages/manifest.json', 'unity/ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: |
+            Library-mg01-
+
+      - name: Build (game-ci/unity-builder)
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE:  ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL:    ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath:        unity
+          targetPlatform:     WebGL
+          unityVersion:       2022.3.40f1
+          buildName:          mg01
+          buildsPath:         unity/Builds
+          buildMethod:        Mg01.Editor.BuildScript.BuildWebGL
+          allowDirtyBuild:    true
+
+      - name: Inspect build size
+        id: size
+        run: |
+          echo "bytes=$(du -sb unity/Builds/WebGL | cut -f1)" >> "$GITHUB_OUTPUT"
+          du -sh unity/Builds/WebGL
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mg01-webgl-${{ github.sha }}
+          path: unity/Builds/WebGL
+          retention-days: 14
+
+      # Pages 需要的 artifact（仅 main 分支自动发布）
+      - name: Upload Pages artifact (main only)
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: unity/Builds/WebGL
+
+  deploy-pages:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

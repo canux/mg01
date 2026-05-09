@@ -1,0 +1,2450 @@
+{
+  "_doc": "每个 assetKey 的精灵路径 + 帧布局。当前指向生成的 SVG 单帧占位；替换真实美术时，把 path 指向 PNG sprite sheet，并按实际 sheet 布局修改 frameSize / sheet.{stand,walk,attack,death}.{row,col,count}。动画时长与事件时间点仍在 units_*.json 的 animation 字段里（对齐 Unity AnimationEvent）。",
+  "_recommended_sheet_example": {
+    "stand": {
+      "row": 0,
+      "col": 0,
+      "count": 2
+    },
+    "walk": {
+      "row": 1,
+      "col": 0,
+      "count": 6
+    },
+    "attack": {
+      "row": 2,
+      "col": 0,
+      "count": 5
+    },
+    "death": {
+      "row": 3,
+      "col": 0,
+      "count": 6
+    }
+  },
+  "_races": [
+    {
+      "id": "human",
+      "color": "#3B7FD9"
+    },
+    {
+      "id": "orc",
+      "color": "#B94A2B"
+    },
+    {
+      "id": "undead",
+      "color": "#7E3FA1"
+    },
+    {
+      "id": "nightelf",
+      "color": "#2FA86E"
+    }
+  ],
+  "sprites": {
+    "human_footman": {
+      "path": "/assets/sprites/human_footman.svg",
+      "kind": "unit",
+      "nameCn": "步兵",
+      "race": "human",
+      "role": "step",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_rifleman": {
+      "path": "/assets/sprites/human_rifleman.svg",
+      "kind": "unit",
+      "nameCn": "火枪手",
+      "race": "human",
+      "role": "range",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_knight": {
+      "path": "/assets/sprites/human_knight.svg",
+      "kind": "unit",
+      "nameCn": "骑士",
+      "race": "human",
+      "role": "heavy",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_mortar": {
+      "path": "/assets/sprites/human_mortar.svg",
+      "kind": "unit",
+      "nameCn": "迫击炮小队",
+      "race": "human",
+      "role": "siege",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_gryphon": {
+      "path": "/assets/sprites/human_gryphon.svg",
+      "kind": "unit",
+      "nameCn": "狮鹫骑士",
+      "race": "human",
+      "role": "flying",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_priest": {
+      "path": "/assets/sprites/human_priest.svg",
+      "kind": "unit",
+      "nameCn": "牧师",
+      "race": "human",
+      "role": "caster",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_archmage": {
+      "path": "/assets/sprites/human_archmage.svg",
+      "kind": "unit",
+      "nameCn": "大法师",
+      "race": "human",
+      "role": "legendary",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_grunt": {
+      "path": "/assets/sprites/orc_grunt.svg",
+      "kind": "unit",
+      "nameCn": "步兵",
+      "race": "orc",
+      "role": "step",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_headhunter": {
+      "path": "/assets/sprites/orc_headhunter.svg",
+      "kind": "unit",
+      "nameCn": "投矛兵",
+      "race": "orc",
+      "role": "range",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_tauren": {
+      "path": "/assets/sprites/orc_tauren.svg",
+      "kind": "unit",
+      "nameCn": "牛头人",
+      "race": "orc",
+      "role": "heavy",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_catapult": {
+      "path": "/assets/sprites/orc_catapult.svg",
+      "kind": "unit",
+      "nameCn": "投石车",
+      "race": "orc",
+      "role": "siege",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_windrider": {
+      "path": "/assets/sprites/orc_windrider.svg",
+      "kind": "unit",
+      "nameCn": "双足飞龙",
+      "race": "orc",
+      "role": "flying",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_shaman": {
+      "path": "/assets/sprites/orc_shaman.svg",
+      "kind": "unit",
+      "nameCn": "萨满",
+      "race": "orc",
+      "role": "caster",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_blademaster": {
+      "path": "/assets/sprites/orc_blademaster.svg",
+      "kind": "unit",
+      "nameCn": "剑圣",
+      "race": "orc",
+      "role": "legendary",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_ghoul": {
+      "path": "/assets/sprites/ud_ghoul.svg",
+      "kind": "unit",
+      "nameCn": "食尸鬼",
+      "race": "undead",
+      "role": "step",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_cryptfiend": {
+      "path": "/assets/sprites/ud_cryptfiend.svg",
+      "kind": "unit",
+      "nameCn": "毁灭蜘蛛",
+      "race": "undead",
+      "role": "range",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_abomination": {
+      "path": "/assets/sprites/ud_abomination.svg",
+      "kind": "unit",
+      "nameCn": "憎恶",
+      "race": "undead",
+      "role": "heavy",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_meatwagon": {
+      "path": "/assets/sprites/ud_meatwagon.svg",
+      "kind": "unit",
+      "nameCn": "绞肉车",
+      "race": "undead",
+      "role": "siege",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_gargoyle": {
+      "path": "/assets/sprites/ud_gargoyle.svg",
+      "kind": "unit",
+      "nameCn": "石像鬼",
+      "race": "undead",
+      "role": "flying",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_necromancer": {
+      "path": "/assets/sprites/ud_necromancer.svg",
+      "kind": "unit",
+      "nameCn": "巫师",
+      "race": "undead",
+      "role": "caster",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_lich": {
+      "path": "/assets/sprites/ud_lich.svg",
+      "kind": "unit",
+      "nameCn": "巫妖",
+      "race": "undead",
+      "role": "legendary",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_archer": {
+      "path": "/assets/sprites/ne_archer.svg",
+      "kind": "unit",
+      "nameCn": "弓箭手",
+      "race": "nightelf",
+      "role": "range",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_huntress": {
+      "path": "/assets/sprites/ne_huntress.svg",
+      "kind": "unit",
+      "nameCn": "女猎手",
+      "race": "nightelf",
+      "role": "step",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_druidbear": {
+      "path": "/assets/sprites/ne_druidbear.svg",
+      "kind": "unit",
+      "nameCn": "熊德鲁伊",
+      "race": "nightelf",
+      "role": "heavy",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_glaive": {
+      "path": "/assets/sprites/ne_glaive.svg",
+      "kind": "unit",
+      "nameCn": "投刃车",
+      "race": "nightelf",
+      "role": "siege",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_chimera": {
+      "path": "/assets/sprites/ne_chimera.svg",
+      "kind": "unit",
+      "nameCn": "奇美拉",
+      "race": "nightelf",
+      "role": "flying",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_druidtalon": {
+      "path": "/assets/sprites/ne_druidtalon.svg",
+      "kind": "unit",
+      "nameCn": "乌鸦德鲁伊",
+      "race": "nightelf",
+      "role": "caster",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_keeper": {
+      "path": "/assets/sprites/ne_keeper.svg",
+      "kind": "unit",
+      "nameCn": "丛林守护者",
+      "race": "nightelf",
+      "role": "legendary",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.85
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_castle": {
+      "path": "/assets/sprites/human_castle.svg",
+      "kind": "building",
+      "nameCn": "人族主城",
+      "race": "human",
+      "buildingKind": "castle",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_castle": {
+      "path": "/assets/sprites/orc_castle.svg",
+      "kind": "building",
+      "nameCn": "兽族主城",
+      "race": "orc",
+      "buildingKind": "castle",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_castle": {
+      "path": "/assets/sprites/ud_castle.svg",
+      "kind": "building",
+      "nameCn": "不死主城",
+      "race": "undead",
+      "buildingKind": "castle",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_castle": {
+      "path": "/assets/sprites/ne_castle.svg",
+      "kind": "building",
+      "nameCn": "精灵主城",
+      "race": "nightelf",
+      "buildingKind": "castle",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_goldmine": {
+      "path": "/assets/sprites/human_goldmine.svg",
+      "kind": "building",
+      "nameCn": "人族金矿",
+      "race": "human",
+      "buildingKind": "economy",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_goldmine": {
+      "path": "/assets/sprites/orc_goldmine.svg",
+      "kind": "building",
+      "nameCn": "兽族金矿",
+      "race": "orc",
+      "buildingKind": "economy",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_haunted": {
+      "path": "/assets/sprites/ud_haunted.svg",
+      "kind": "building",
+      "nameCn": "闹鬼金矿",
+      "race": "undead",
+      "buildingKind": "economy",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_entangledmine": {
+      "path": "/assets/sprites/ne_entangledmine.svg",
+      "kind": "building",
+      "nameCn": "缠绕金矿",
+      "race": "nightelf",
+      "buildingKind": "economy",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_tower": {
+      "path": "/assets/sprites/human_tower.svg",
+      "kind": "building",
+      "nameCn": "人族箭塔",
+      "race": "human",
+      "buildingKind": "tower",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_tower": {
+      "path": "/assets/sprites/orc_tower.svg",
+      "kind": "building",
+      "nameCn": "兽族瞭望塔",
+      "race": "orc",
+      "buildingKind": "tower",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_tower": {
+      "path": "/assets/sprites/ud_tower.svg",
+      "kind": "building",
+      "nameCn": "尖塔",
+      "race": "undead",
+      "buildingKind": "tower",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_tower": {
+      "path": "/assets/sprites/ne_tower.svg",
+      "kind": "building",
+      "nameCn": "远古守护者",
+      "race": "nightelf",
+      "buildingKind": "tower",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_barracks": {
+      "path": "/assets/sprites/human_barracks.svg",
+      "kind": "building",
+      "nameCn": "步兵营",
+      "race": "human",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_stable": {
+      "path": "/assets/sprites/human_stable.svg",
+      "kind": "building",
+      "nameCn": "骑士马厩",
+      "race": "human",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_workshop": {
+      "path": "/assets/sprites/human_workshop.svg",
+      "kind": "building",
+      "nameCn": "迫击炮厂",
+      "race": "human",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_aviary": {
+      "path": "/assets/sprites/human_aviary.svg",
+      "kind": "building",
+      "nameCn": "狮鹫笼",
+      "race": "human",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_sanctum": {
+      "path": "/assets/sprites/human_sanctum.svg",
+      "kind": "building",
+      "nameCn": "牧师圣堂",
+      "race": "human",
+      "buildingKind": "special",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "human_altar": {
+      "path": "/assets/sprites/human_altar.svg",
+      "kind": "building",
+      "nameCn": "大法师祭坛",
+      "race": "human",
+      "buildingKind": "legendary",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_barracks": {
+      "path": "/assets/sprites/orc_barracks.svg",
+      "kind": "building",
+      "nameCn": "兽族兵营",
+      "race": "orc",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_trollden": {
+      "path": "/assets/sprites/orc_trollden.svg",
+      "kind": "building",
+      "nameCn": "巨魔营地",
+      "race": "orc",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_totem": {
+      "path": "/assets/sprites/orc_totem.svg",
+      "kind": "building",
+      "nameCn": "牛头人图腾",
+      "race": "orc",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_workshop": {
+      "path": "/assets/sprites/orc_workshop.svg",
+      "kind": "building",
+      "nameCn": "兽族工厂",
+      "race": "orc",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_beastiary": {
+      "path": "/assets/sprites/orc_beastiary.svg",
+      "kind": "building",
+      "nameCn": "野兽栏",
+      "race": "orc",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_spiritlodge": {
+      "path": "/assets/sprites/orc_spiritlodge.svg",
+      "kind": "building",
+      "nameCn": "精灵小屋",
+      "race": "orc",
+      "buildingKind": "special",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "orc_altar": {
+      "path": "/assets/sprites/orc_altar.svg",
+      "kind": "building",
+      "nameCn": "剑圣祭坛",
+      "race": "orc",
+      "buildingKind": "legendary",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_crypt": {
+      "path": "/assets/sprites/ud_crypt.svg",
+      "kind": "building",
+      "nameCn": "地穴",
+      "race": "undead",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_slaughterhouse": {
+      "path": "/assets/sprites/ud_slaughterhouse.svg",
+      "kind": "building",
+      "nameCn": "屠宰场",
+      "race": "undead",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_graveyard": {
+      "path": "/assets/sprites/ud_graveyard.svg",
+      "kind": "building",
+      "nameCn": "墓地",
+      "race": "undead",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_boneyard": {
+      "path": "/assets/sprites/ud_boneyard.svg",
+      "kind": "building",
+      "nameCn": "骨堆",
+      "race": "undead",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_temple": {
+      "path": "/assets/sprites/ud_temple.svg",
+      "kind": "building",
+      "nameCn": "诅咒神庙",
+      "race": "undead",
+      "buildingKind": "special",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ud_altar": {
+      "path": "/assets/sprites/ud_altar.svg",
+      "kind": "building",
+      "nameCn": "巫妖祭坛",
+      "race": "undead",
+      "buildingKind": "legendary",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_ancientofwar": {
+      "path": "/assets/sprites/ne_ancientofwar.svg",
+      "kind": "building",
+      "nameCn": "古树远程",
+      "race": "nightelf",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_ancientoflore": {
+      "path": "/assets/sprites/ne_ancientoflore.svg",
+      "kind": "building",
+      "nameCn": "知识古树",
+      "race": "nightelf",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_ancientofwind": {
+      "path": "/assets/sprites/ne_ancientofwind.svg",
+      "kind": "building",
+      "nameCn": "风之古树",
+      "race": "nightelf",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_chimeraroost": {
+      "path": "/assets/sprites/ne_chimeraroost.svg",
+      "kind": "building",
+      "nameCn": "奇美拉栖木",
+      "race": "nightelf",
+      "buildingKind": "barracks",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_moonwell": {
+      "path": "/assets/sprites/ne_moonwell.svg",
+      "kind": "building",
+      "nameCn": "月之井",
+      "race": "nightelf",
+      "buildingKind": "special",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    },
+    "ne_altar": {
+      "path": "/assets/sprites/ne_altar.svg",
+      "kind": "building",
+      "nameCn": "众王祭坛",
+      "race": "nightelf",
+      "buildingKind": "legendary",
+      "frameSize": {
+        "w": 64,
+        "h": 64
+      },
+      "anchor": {
+        "x": 0.5,
+        "y": 0.9
+      },
+      "sheet": {
+        "stand": {
+          "row": 0,
+          "col": 0,
+          "count": 1
+        },
+        "walk": {
+          "row": 1,
+          "col": 0,
+          "count": 1
+        },
+        "attack": {
+          "row": 2,
+          "col": 0,
+          "count": 1
+        },
+        "death": {
+          "row": 3,
+          "col": 0,
+          "count": 1
+        }
+      }
+    }
+  }
+}

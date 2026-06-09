@@ -14,16 +14,21 @@ There is no build system, no dependency manifest, no test suite, and no applicat
 
 ## What the signals tell us
 
-The only technical hint in the repo is the `.gitignore`, which targets a **compiled, C/C++-family toolchain** (object files, static/shared libraries, and native executables for Windows, Linux, and macOS). Combined with the "mobilegame" description, the likely intent is a native or cross-platform mobile game rather than a web/JS project. Treat this as a hint, not a commitment — confirm the intended language, engine, and target platforms with the user before scaffolding.
+Two technical hints exist, and they don't fully agree:
+
+- **A Unity → WebGL build workflow.** GitHub Actions has a registered workflow named `Build WebGL (Unity)` (path `.github/workflows/build-webgl.yml`). **Note:** the file is not actually present in the repository tree on `master` — it's an orphaned Actions registration (likely added then removed), so nothing runs on PRs today and the head commit has zero check runs. Despite being orphaned, it's the strongest indication of intent: a **Unity** game (C#) targeting **WebGL**, consistent with the "mobilegame" description.
+- **A C/C++ `.gitignore`.** The committed `.gitignore` targets a compiled C/C++ toolchain (`*.o`, `*.a`, `*.so`, `*.dll`, `*.exe`, etc.). This does **not** match a Unity/C# project, which has a very different ignore profile (`Library/`, `Temp/`, `Obj/`, `Build/`, `*.csproj`, etc.). Treat this `.gitignore` as a generic/leftover starter, not evidence of a C/C++ project.
+
+Net: the most likely intent is a **Unity mobile game built to WebGL**, but nothing is committed to confirm it. Treat this as a hint, not a commitment — confirm the engine, language, and target platforms with the user before scaffolding, and replace the `.gitignore` with a Unity-appropriate one if that direction is confirmed.
 
 ## Before you build anything
 
 Because the project is unscaffolded, the highest-value first step is usually to **clarify direction rather than guess**. Good things to confirm with the user:
 
-- Target platform(s): Android, iOS, or both? Native or via an engine?
-- Engine/framework: a game engine (e.g. a C++ engine), a cross-platform toolkit, or hand-rolled?
-- Language and toolchain, since the `.gitignore` only weakly implies C/C++.
-- Build system (CMake, Make, Gradle, Xcode, etc.) — none is chosen yet.
+- Engine: is this the **Unity** project the orphaned WebGL workflow implies? If so, which Unity version?
+- Target platform(s): WebGL (per the workflow), Android, iOS, or some combination?
+- Language and toolchain: Unity implies C#; the C/C++ `.gitignore` conflicts with that and should be replaced.
+- CI: should the `Build WebGL (Unity)` workflow file be (re)added so the registered workflow actually runs?
 
 Once a direction is set, update this file to document the real structure, build/test commands, and conventions as they are created.
 
